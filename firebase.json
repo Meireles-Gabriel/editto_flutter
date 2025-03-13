@@ -1,0 +1,53 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "edittomagazine",
+          "appId": "1:21157069349:android:8d35ef867fc271a1b175cc",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "edittomagazine",
+          "configurations": {
+            "android": "1:21157069349:android:8d35ef867fc271a1b175cc",
+            "web": "1:21157069349:web:002441ae850fbf3bb175cc",
+            "windows": "1:21157069349:web:509ef9cb5dcb74fbb175cc"
+          }
+        }
+      }
+    }
+  },
+  "hosting": [{
+    "target": "editto",
+    "public": "build/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  },
+{
+  "target": "edittomagazine",
+  "public": "build/web",
+  "ignore": [
+    "firebase.json",
+    "**/.*",
+    "**/node_modules/**"
+  ],
+  "rewrites": [
+    {
+      "source": "**",
+      "destination": "/index.html"
+    }
+  ]
+}]
+}

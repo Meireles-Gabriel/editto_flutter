@@ -1,5 +1,5 @@
 name: editto_flutter
-description: "A new Flutter project."
+description: "Éditto Magazine."
 publish_to: 'none'
 version: 0.1.0
 
@@ -10,6 +10,39 @@ dependencies:
   flutter:
     sdk: flutter
 
+  google_fonts: 
+  animate_do: 
+  flutter_riverpod: 
+  shared_preferences: 
+  firebase_core: 
+  cloud_firestore: 
+  firebase_auth: 
+  firebase_storage: 
+  flutter_stripe: 11.4.0
+  flutter_stripe_web: 
+  cached_network_image: 
+  printing: 
+  pdf: 
+  flutter_pdfview: 
+  http: 
+  flutter_launcher_icons: 
+  flutter_native_splash: 
+  
+
+flutter_native_splash:
+  color: "#F1F1FF"
+  image: "assets/icon.png"
+  android: true
+  ios: true
+
+flutter_icons:
+  image_path: "assets/icon.png"
+  ios: true
+  remove_alpha_ios: true
+  android: "launcher_icon"
+  adaptive_icon_background: "#EEEFF5"
+  adaptive_icon_foreground: "assets/icon_android.png"
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -17,3 +50,5 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/

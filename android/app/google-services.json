@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "21157069349",
+    "project_id": "edittomagazine",
+    "storage_bucket": "edittomagazine.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:21157069349:android:b4959d0e7e3a06deb175cc",
+        "android_client_info": {
+          "package_name": "com.baelfire.editto"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBYemv-R-6h1XZ5B8ixXxxsfNylEbr4Pak"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:21157069349:android:8d35ef867fc271a1b175cc",
+        "android_client_info": {
+          "package_name": "com.example.editto_flutter"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBYemv-R-6h1XZ5B8ixXxxsfNylEbr4Pak"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

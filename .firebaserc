@@ -1,0 +1,18 @@
+{
+  "projects": {
+    "default": "edittomagazine"
+  },
+  "targets": {
+    "edittomagazine": {
+      "hosting": {
+        "editto": [
+          "editto"
+        ],
+        "edittomagazine": [
+          "edittomagazine"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}
