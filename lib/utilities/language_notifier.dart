@@ -1,10 +1,16 @@
+// Required imports for language management
+// Importações necessárias para gerenciamento de idioma
 import 'dart:ui';
 
 import 'package:editto_flutter/utilities/texts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+// Language state management class using Riverpod
+// Classe de gerenciamento de estado do idioma usando Riverpod
 class LanguageNotifier extends StateNotifier<Map<String, dynamic>> {
+  // Initialize with system language or English as default
+  // Inicializa com o idioma do sistema ou inglês como padrão
   LanguageNotifier()
       : super({
           'language': PlatformDispatcher.instance.locale.languageCode,
@@ -13,6 +19,8 @@ class LanguageNotifier extends StateNotifier<Map<String, dynamic>> {
     _loadSettings();
   }
 
+  // Load saved language settings from local storage
+  // Carrega as configurações de idioma salvas do armazenamento local
   void _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
     final languageCode = prefs.getString('language') ??
@@ -24,6 +32,8 @@ class LanguageNotifier extends StateNotifier<Map<String, dynamic>> {
     };
   }
 
+  // Toggle between English and Portuguese
+  // Alterna entre inglês e português
   void toggleLanguage(bool isEnglish) {
     final languageCode = isEnglish ? 'en' : 'pt';
     state = {
@@ -33,6 +43,8 @@ class LanguageNotifier extends StateNotifier<Map<String, dynamic>> {
   }
 }
 
+// Global provider for language state
+// Provedor global para o estado do idioma
 final languageNotifierProvider =
     StateNotifierProvider<LanguageNotifier, Map<String, dynamic>>(
   (ref) {

@@ -1,3 +1,5 @@
+// Required imports for the intro page
+// Importações necessárias para a página de introdução
 import 'package:editto_flutter/utilities/language_notifier.dart';
 import 'package:editto_flutter/widgets/language_switch.dart';
 import 'package:editto_flutter/widgets/theme_switch.dart';
@@ -6,6 +8,8 @@ import 'package:editto_flutter/utilities/helper_class.dart';
 import 'package:editto_flutter/pages/login_page.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+// Intro page widget with state management
+// Widget da página de introdução com gerenciamento de estado
 class IntroPage extends ConsumerStatefulWidget {
   const IntroPage({super.key});
 
@@ -16,15 +20,21 @@ class IntroPage extends ConsumerStatefulWidget {
 class _IntroPageState extends ConsumerState<IntroPage> {
   @override
   Widget build(BuildContext context) {
+    // Get localized texts and screen dimensions
+    // Obtém textos localizados e dimensões da tela
     final texts = ref.watch(languageNotifierProvider)['texts'];
     final size = MediaQuery.of(context).size;
     final paddingWidth = size.width * 0.1;
 
+    // Build the main content of the page
+    // Constrói o conteúdo principal da página
     Widget buildContent(BuildContext context) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            // App logo and title section
+            // Seção do logo e título do app
             Icon(
               Icons.menu_book_rounded,
               size: 120,
@@ -74,6 +84,8 @@ class _IntroPageState extends ConsumerState<IntroPage> {
       );
     }
 
+    // Responsive layout scaffold
+    // Scaffold com layout responsivo
     return Scaffold(
       appBar: AppBar(
         actions: const [
@@ -83,6 +95,8 @@ class _IntroPageState extends ConsumerState<IntroPage> {
       ),
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
+        // Responsive layout helper
+        // Auxiliar de layout responsivo
         child: HelperClass(
           mobile: SingleChildScrollView(
             padding: const EdgeInsets.all(24),

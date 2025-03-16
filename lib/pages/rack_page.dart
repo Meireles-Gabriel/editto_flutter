@@ -1,31 +1,44 @@
+// Required imports for rack functionality
+// Importações necessárias para funcionalidade da estante
+import 'package:editto_flutter/utilities/language_notifier.dart';
 import 'package:editto_flutter/widgets/default_bottom_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:editto_flutter/utilities/helper_class.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class RackPage extends StatelessWidget {
+// Rack page widget with state management
+// Widget da página da estante com gerenciamento de estado
+class RackPage extends ConsumerStatefulWidget {
   const RackPage({super.key});
 
+  @override
+  ConsumerState<RackPage> createState() => _RackPageState();
+}
+
+class _RackPageState extends ConsumerState<RackPage> {
+  // Build main content with grid of magazines
+  // Constrói conteúdo principal com grade de revistas
   Widget buildContent(BuildContext context) {
+    final texts = ref.watch(languageNotifierProvider)['texts'];
     return CustomScrollView(
       slivers: [
+        // Floating app bar with search
+        // Barra de app flutuante com busca
         SliverAppBar(
           floating: true,
-          title: const Text('My Rack'),
+          title: Text(texts['rack'][0]),
           actions: [
             IconButton(
               icon: const Icon(Icons.search),
               onPressed: () {
                 // TODO: Implement search functionality
-              },
-            ),
-            IconButton(
-              icon: const Icon(Icons.filter_list),
-              onPressed: () {
-                // TODO: Implement filter functionality
+                // TODO: Implementar funcionalidade de busca
               },
             ),
           ],
         ),
+        // Grid of magazine cards
+        // Grade de cards de revistas
         SliverPadding(
           padding: const EdgeInsets.all(16),
           sliver: SliverGrid(
@@ -37,11 +50,15 @@ class RackPage extends StatelessWidget {
             ),
             delegate: SliverChildBuilderDelegate(
               (BuildContext context, int index) {
+                // Magazine card with cover and details
+                // Card de revista com capa e detalhes
                 return Card(
                   clipBehavior: Clip.antiAlias,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Magazine cover placeholder
+                      // Placeholder para capa da revista
                       Expanded(
                         child: Container(
                           color: Theme.of(context)
@@ -57,6 +74,8 @@ class RackPage extends StatelessWidget {
                           ),
                         ),
                       ),
+                      // Magazine details section
+                      // Seção de detalhes da revista
                       Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: Column(
@@ -95,9 +114,13 @@ class RackPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Get screen dimensions for responsive layout
+    // Obtém dimensões da tela para layout responsivo
     final size = MediaQuery.of(context).size;
-    final paddingWidth = size.width * 0.1;
+    final paddingWidth = size.width * 0.0;
 
+    // Build scaffold with responsive layout
+    // Constrói scaffold com layout responsivo
     return Scaffold(
       bottomNavigationBar: const DefaultBottomAppBar(),
       backgroundColor: Theme.of(context).colorScheme.surface,
@@ -119,12 +142,6 @@ class RackPage extends StatelessWidget {
           paddingWidth: paddingWidth,
           bgColor: Theme.of(context).colorScheme.surface,
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // TODO: Implement add new magazine functionality
-        },
-        child: const Icon(Icons.add),
       ),
     );
   }

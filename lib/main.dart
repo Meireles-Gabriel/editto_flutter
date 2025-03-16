@@ -1,3 +1,5 @@
+// Import required packages and local files
+// Importação dos pacotes e arquivos locais necessários
 import 'package:editto_flutter/pages/intro_page.dart';
 import 'package:editto_flutter/pages/newsstand_page.dart';
 import 'package:editto_flutter/utilities/theme_notifier.dart';
@@ -8,6 +10,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'utilities/firebase_options.dart';
 
+// Entry point: Initialize Firebase and run the app
+// Ponto de entrada: Inicializa o Firebase e executa o aplicativo
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
@@ -17,11 +21,15 @@ void main() async {
   runApp(const ProviderScope(child: MyApp()));
 }
 
+// Main app widget with theme management using Riverpod
+// Widget principal do app com gerenciamento de tema usando Riverpod
 class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Watch for theme changes
+    // Observa mudanças no tema
     final isDarkMode = ref.watch(themeNotifierProvider) == ThemeMode.dark;
 
     return MaterialApp(
@@ -30,6 +38,8 @@ class MyApp extends ConsumerWidget {
       theme: lightTheme,
       darkTheme: darkTheme,
       themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
+      // Authentication state management: Show IntroPage or NewsstandPage
+      // Gerenciamento de estado de autenticação: Mostra IntroPage ou NewsstandPage
       home: StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {

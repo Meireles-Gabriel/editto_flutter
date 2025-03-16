@@ -1,14 +1,21 @@
+// Intro page texts in Portuguese
+// Textos da página de introdução em português
 List<String> introPT = [
   'Éditto', //0
   'Verdadeiramente Sua Magazine', //1
   'Começar', //2
 ];
+
+// Intro page texts in English
+// Textos da página de introdução em inglês
 List<String> introEN = [
   'Éditto', //0
   'Truly Yours Magazine', //1
   'Get Started', //2
 ];
 
+// Login page texts in Portuguese
+// Textos da página de login em português
 List<String> loginPT = [
   'Nome', //0
   'Email', //1
@@ -27,6 +34,9 @@ List<String> loginPT = [
   'Cancelar', //14
   'Enviar', //15
 ];
+
+// Login page texts in English
+// Textos da página de login em inglês
 List<String> loginEN = [
   'Name', //0
   'Email', //1
@@ -46,11 +56,44 @@ List<String> loginEN = [
   'Send', //15
 ];
 
+// Newsstand page texts in Portuguese
+// Textos da página de banca em português
+List<String> newsstandPT = [
+  'Banca de Revistas', //0
+];
+
+// Newsstand page texts in English
+// Textos da página de banca em inglês
+List<String> newsstandEN = [
+  'Newsstand', //0
+];
+
+// Rack page texts in Portuguese
+// Textos da página de estante em português
+List<String> rackPT = [
+  'Minha Estante', //0
+];
+
+// Rack page texts in English
+// Textos da página de estante em inglês
+List<String> rackEN = [
+  'My Rack', //0
+];
+
+// Map of all Portuguese texts
+// Mapa de todos os textos em português
 Map<String, List<String>> portugueseTexts = {
   'intro': introPT,
   'login': loginPT,
+  'newsstand': newsstandPT,
+  'rack': rackPT,
 };
+
+// Map of all English texts
+// Mapa de todos os textos em inglês
 Map<String, List<String>> englishTexts = {
   'intro': introEN,
   'login': loginEN,
+  'newsstand': newsstandEN,
+  'rack': rackEN,
 };

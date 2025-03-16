@@ -1,5 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
+// Required imports for login functionality
+// Importações necessárias para funcionalidade de login
 import 'package:editto_flutter/pages/newsstand_page.dart';
 import 'package:editto_flutter/utilities/helper_class.dart';
 import 'package:editto_flutter/widgets/language_switch.dart';
@@ -10,6 +12,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:editto_flutter/utilities/language_notifier.dart';
 
+// Login page widget with state management
+// Widget da página de login com gerenciamento de estado
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
 
@@ -18,6 +22,8 @@ class LoginPage extends ConsumerStatefulWidget {
 }
 
 class _LoginPageState extends ConsumerState<LoginPage> {
+  // Form controllers and state variables
+  // Controladores de formulário e variáveis de estado
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -25,23 +31,27 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   bool _isLogin = true;
   bool _isLoading = false;
 
-  // Add focus nodes
+  // Focus nodes for form fields
+  // Nós de foco para campos do formulário
   final _nameFocusNode = FocusNode();
   final _emailFocusNode = FocusNode();
   final _passwordFocusNode = FocusNode();
 
+  // Cleanup resources
+  // Limpa recursos
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     _nameController.dispose();
-    // Dispose focus nodes
     _nameFocusNode.dispose();
     _emailFocusNode.dispose();
     _passwordFocusNode.dispose();
     super.dispose();
   }
 
+  // Toggle between login and signup modes
+  // Alterna entre modos de login e cadastro
   void _toggleMode() {
     setState(() {
       _isLogin = !_isLogin;
@@ -49,6 +59,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     });
   }
 
+  // Handle form submission
+  // Manipula envio do formulário
   Future<void> _submitForm() async {
     final texts = ref.read(languageNotifierProvider)['texts'];
 
@@ -57,49 +69,57 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
       try {
         if (_isLogin) {
-          // Login
+          // Login with Firebase
+          // Login com Firebase
           await FirebaseAuth.instance.signInWithEmailAndPassword(
             email: _emailController.text.trim(),
             password: _passwordController.text.trim(),
           );
         } else {
-          // Sign up
+          // Sign up with Firebase
+          // Cadastro com Firebase
           await FirebaseAuth.instance.createUserWithEmailAndPassword(
             email: _emailController.text.trim(),
             password: _passwordController.text.trim(),
           );
 
-          // Update display name
+          // Update user display name
+          // Atualiza nome de exibição do usuário
           await FirebaseAuth.instance.currentUser?.updateDisplayName(
             _nameController.text.trim(),
           );
         }
 
-        // Navigate to NewsstandPage on success
+        // Navigate to main page on success
+        // Navega para página principal em caso de sucesso
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
             builder: (context) => const NewsstandPage(),
           ),
         );
       } on FirebaseAuthException catch (e) {
+        // Handle Firebase authentication errors
+        // Manipula erros de autenticação do Firebase
         setState(() => _isLoading = false);
 
         if (e.code == 'user-not-found' || e.code == 'wrong-password') {
-          showSnackBar(context, texts['login']![10]); // Wrong email or password
+          showSnackBar(context, texts['login']![10]);
         } else if (e.code == 'invalid-email') {
-          showSnackBar(context, texts['login']![9]); // Invalid email format
+          showSnackBar(context, texts['login']![9]);
         } else if (e.code == 'email-already-in-use') {
-          showSnackBar(context, texts['login']![11]); // Email already in use
+          showSnackBar(context, texts['login']![11]);
         } else {
-          showSnackBar(context, texts['login']![8]); // Generic error
+          showSnackBar(context, texts['login']![8]);
         }
       } catch (e) {
         setState(() => _isLoading = false);
-        showSnackBar(context, texts['login']![8]); // Generic error
+        showSnackBar(context, texts['login']![8]);
       }
     }
   }
 
+  // Build login form UI
+  // Constrói interface do formulário de login
   Widget _buildLoginForm(
       BuildContext context, Map<String, List<String>> texts) {
     return Form(
@@ -108,7 +128,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Logo or Title
+          // App logo and title
+          // Logo e título do app
           Icon(
             Icons.menu_book_rounded,
             size: 64,
@@ -136,7 +157,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           ),
           const SizedBox(height: 48),
 
-          // Name Field (only for signup)
+          // Name field (signup only)
+          // Campo de nome (apenas para cadastro)
           if (!_isLogin) ...[
             TextFormField(
               controller: _nameController,
@@ -145,7 +167,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 FocusScope.of(context).requestFocus(_emailFocusNode);
               },
               decoration: InputDecoration(
-                labelText: texts['login']![0], // Name
+                labelText: texts['login']![0],
                 prefixIcon: const Icon(Icons.person_outline),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -153,7 +175,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return texts['login']![5]; // Fill in all fields
+                  return texts['login']![5];
                 }
                 return null;
               },
@@ -161,7 +183,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             const SizedBox(height: 16),
           ],
 
-          // Email Field
+          // Email field
+          // Campo de email
           TextFormField(
             controller: _emailController,
             focusNode: _emailFocusNode,
@@ -170,7 +193,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             },
             keyboardType: TextInputType.emailAddress,
             decoration: InputDecoration(
-              labelText: texts['login']![1], // Email
+              labelText: texts['login']![1],
               prefixIcon: const Icon(Icons.email_outlined),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -178,17 +201,18 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             ),
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return texts['login']![5]; // Fill in all fields
+                return texts['login']![5];
               }
               if (!value.contains('@')) {
-                return texts['login']![7]; // Invalid email
+                return texts['login']![7];
               }
               return null;
             },
           ),
           const SizedBox(height: 16),
 
-          // Password Field
+          // Password field
+          // Campo de senha
           TextFormField(
             controller: _passwordController,
             focusNode: _passwordFocusNode,
@@ -199,7 +223,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             },
             obscureText: true,
             decoration: InputDecoration(
-              labelText: texts['login']![2], // Password
+              labelText: texts['login']![2],
               prefixIcon: const Icon(Icons.lock_outline),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -207,18 +231,18 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             ),
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return texts['login']![5]; // Fill in all fields
+                return texts['login']![5];
               }
               if (value.length < 6) {
-                return texts['login']![
-                    6]; // Password must be at least 6 characters
+                return texts['login']![6];
               }
               return null;
             },
           ),
           const SizedBox(height: 24),
 
-          // Submit Button
+          // Submit button with loading state
+          // Botão de envio com estado de carregamento
           ElevatedButton(
             onPressed: _isLoading ? null : _submitForm,
             style: ElevatedButton.styleFrom(
@@ -234,24 +258,18 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : Text(
-                    _isLogin
-                        ? texts['login']![3]
-                        : texts['login']![4], // Log In or Sign Up
+                    _isLogin ? texts['login']![3] : texts['login']![4],
                     style: const TextStyle(fontSize: 16),
                   ),
           ),
           const SizedBox(height: 16),
 
-          // Toggle Mode Button
+          // Toggle mode button
+          // Botão para alternar modo
           TextButton(
             onPressed: _toggleMode,
             child: Text(
-              _isLogin
-                  ? texts['login']![4]
-                  : texts['login']![3], // Sign Up or Log In
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.primary,
-              ),
+              _isLogin ? texts['login']![4] : texts['login']![3],
             ),
           ),
 
