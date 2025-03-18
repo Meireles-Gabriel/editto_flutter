@@ -35,14 +35,18 @@ class _IntroPageState extends ConsumerState<IntroPage> {
           children: [
             // App logo and title section
             // Seção do logo e título do app
-            Icon(
-              Icons.menu_book_rounded,
-              size: 120,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            const SizedBox(height: 32),
+            Theme.of(context).brightness == Brightness.light
+                ? Image.asset(
+                    'assets/logo_light.png',
+                    height: 120,
+                  )
+                : Image.asset(
+                    'assets/logo_dark.png',
+                    height: 120,
+                  ),
+            const SizedBox(height: 24),
             Text(
-              'Éditto',
+              'Éditto', // texts['intro'][0] - "Éditto" / "Éditto"
               style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: Theme.of(context).colorScheme.primary,
@@ -50,7 +54,8 @@ class _IntroPageState extends ConsumerState<IntroPage> {
               textAlign: TextAlign.center,
             ),
             Text(
-              texts['intro'][1],
+              texts['intro'][
+                  1], // "Truly Yours Magazine" / "Verdadeiramente Sua Magazine"
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     color: Theme.of(context).colorScheme.primary,
                   ),
@@ -75,7 +80,7 @@ class _IntroPageState extends ConsumerState<IntroPage> {
                 ),
               ),
               child: Text(
-                texts['intro'][2],
+                texts['intro'][2], // "Get Started" / "Começar"
                 style: const TextStyle(fontSize: 18),
               ),
             ),

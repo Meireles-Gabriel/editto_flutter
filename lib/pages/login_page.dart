@@ -103,17 +103,32 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         setState(() => _isLoading = false);
 
         if (e.code == 'user-not-found' || e.code == 'wrong-password') {
-          showSnackBar(context, texts['login']![10]);
+          showSnackBar(
+              context,
+              texts['login']![
+                  10]); // "Wrong email or password." / "Email ou senha incorreta."
         } else if (e.code == 'invalid-email') {
-          showSnackBar(context, texts['login']![9]);
+          showSnackBar(
+              context,
+              texts['login']![
+                  9]); // "The email address is badly formatted." / "O formato do endereço de email é inválido."
         } else if (e.code == 'email-already-in-use') {
-          showSnackBar(context, texts['login']![11]);
+          showSnackBar(
+              context,
+              texts['login']![
+                  11]); // "The provided email is already in use by an account." / "O email fornecido já está sendo utilizado por uma conta."
         } else {
-          showSnackBar(context, texts['login']![8]);
+          showSnackBar(
+              context,
+              texts['login']![
+                  8]); // "Something went wrong. Please try again later." / "Algo deu errado. Tente novamente mais tarde."
         }
       } catch (e) {
         setState(() => _isLoading = false);
-        showSnackBar(context, texts['login']![8]);
+        showSnackBar(
+            context,
+            texts['login']![
+                8]); // "Something went wrong. Please try again later." / "Algo deu errado. Tente novamente mais tarde."
       }
     }
   }
@@ -130,12 +145,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         children: [
           // App logo and title
           // Logo e título do app
-          Icon(
-            Icons.menu_book_rounded,
-            size: 64,
-            color: Theme.of(context).colorScheme.primary,
-          ),
-          const SizedBox(height: 24),
+          Theme.of(context).brightness == Brightness.light
+              ? Image.asset(
+                  'assets/logo_light.png',
+                  height: 64,
+                )
+              : Image.asset(
+                  'assets/logo_dark.png',
+                  height: 64,
+                ),
+          const SizedBox(height: 16),
           Column(
             children: [
               Text(
@@ -147,7 +166,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 textAlign: TextAlign.center,
               ),
               Text(
-                texts['intro']![1],
+                texts['intro']![
+                    1], // "Truly Yours Magazine" / "Verdadeiramente Sua Magazine"
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       color: Theme.of(context).colorScheme.primary,
                     ),
@@ -167,7 +187,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 FocusScope.of(context).requestFocus(_emailFocusNode);
               },
               decoration: InputDecoration(
-                labelText: texts['login']![0],
+                labelText: texts['login']![0], // "Name" / "Nome"
                 prefixIcon: const Icon(Icons.person_outline),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -175,7 +195,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return texts['login']![5];
+                  return texts['login']![
+                      5]; // "Fill in all fields." / "Preencha todos os campos."
                 }
                 return null;
               },
@@ -193,7 +214,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             },
             keyboardType: TextInputType.emailAddress,
             decoration: InputDecoration(
-              labelText: texts['login']![1],
+              labelText: texts['login']![1], // "Email" / "Email"
               prefixIcon: const Icon(Icons.email_outlined),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -201,10 +222,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             ),
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return texts['login']![5];
+                return texts['login']![
+                    5]; // "Fill in all fields." / "Preencha todos os campos."
               }
               if (!value.contains('@')) {
-                return texts['login']![7];
+                return texts['login']![
+                    7]; // "Invalid Email." / "Email inválido."
               }
               return null;
             },
@@ -223,7 +246,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             },
             obscureText: true,
             decoration: InputDecoration(
-              labelText: texts['login']![2],
+              labelText: texts['login']![2], // "Password" / "Senha"
               prefixIcon: const Icon(Icons.lock_outline),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -231,10 +254,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             ),
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return texts['login']![5];
+                return texts['login']![
+                    5]; // "Fill in all fields." / "Preencha todos os campos."
               }
               if (value.length < 6) {
-                return texts['login']![6];
+                return texts['login']![
+                    6]; // "The password must be at least 6 characters long." / "A senha deve ter pelo menos 6 caracteres."
               }
               return null;
             },
@@ -258,7 +283,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : Text(
-                    _isLogin ? texts['login']![3] : texts['login']![4],
+                    _isLogin
+                        ? texts['login']![3]
+                        : texts['login']![
+                            4], // "Log In" / "Entrar" or "Sign Up" / "Cadastrar"
                     style: const TextStyle(fontSize: 16),
                   ),
           ),
@@ -269,7 +297,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           TextButton(
             onPressed: _toggleMode,
             child: Text(
-              _isLogin ? texts['login']![4] : texts['login']![3],
+              _isLogin
+                  ? texts['login']![4]
+                  : texts['login']![
+                      3], // "Sign Up" / "Cadastrar" or "Log In" / "Entrar"
             ),
           ),
 
@@ -289,21 +320,26 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         );
                         Navigator.pop(context);
                         showSnackBar(
-                            context, texts['login']![13]); // Email sent
+                            context,
+                            texts['login']![
+                                13]); // "An email has been sent with the link to create a new password." / "Um email foi enviado com o link para criar uma nova senha."
                       } on FirebaseAuthException {
                         showSnackBar(
-                            context, texts['login']![8]); // Generic error
+                            context,
+                            texts['login']![
+                                8]); // "Something went wrong. Please try again later." / "Algo deu errado. Tente novamente mais tarde."
                         Navigator.pop(context);
                       }
                     }
 
                     return AlertDialog(
                       backgroundColor: Theme.of(context).colorScheme.surface,
-                      title: Text(texts['login']![12]), // Forgot your password?
+                      title: Text(texts['login']![
+                          12]), // "Forgot your password?" / "Esqueceu sua senha?"
                       content: TextField(
                         controller: emailController,
                         decoration: InputDecoration(
-                          labelText: texts['login']![1], // Email
+                          labelText: texts['login']![1], // "Email" / "Email"
                           border: const OutlineInputBorder(),
                         ),
                         onSubmitted: (_) => handleResetPassword(),
@@ -311,7 +347,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(context),
-                          child: Text(texts['login']![14]), // Cancel
+                          child: Text(
+                              texts['login']![14]), // "Cancel" / "Cancelar"
                         ),
                         ElevatedButton(
                           style: ElevatedButton.styleFrom(
@@ -321,7 +358,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             ),
                           ),
                           onPressed: handleResetPassword,
-                          child: Text(texts['login']![15]), // Send
+                          child: Text(texts['login']![15]), // "Send" / "Enviar"
                         ),
                       ],
                     );
@@ -329,7 +366,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 );
               },
               child: Text(
-                texts['login']![12], // Forgot your password?
+                texts['login']![
+                    12], // "Forgot your password?" / "Esqueceu sua senha?"
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.secondary,
                 ),
@@ -349,7 +387,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Éditto Magazine'),
+        title: Text(texts['login']![16]), // "Login/Signup" / "Login/Cadastro"
         actions: const [
           ThemeSwitch(),
           LanguageSwitch(),

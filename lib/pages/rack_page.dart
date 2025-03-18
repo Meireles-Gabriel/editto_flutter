@@ -26,7 +26,7 @@ class _RackPageState extends ConsumerState<RackPage> {
         // Barra de app flutuante com busca
         SliverAppBar(
           floating: true,
-          title: Text(texts['rack'][0]),
+          title: Text(texts['rack'][0]), // "My Rack" / "Minha Estante"
           actions: [
             IconButton(
               icon: const Icon(Icons.search),

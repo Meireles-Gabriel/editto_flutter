@@ -30,7 +30,7 @@ dependencies:
   
 
 flutter_native_splash:
-  color: "#F1F1FF"
+  color: "#2F3844"
   image: "assets/icon.png"
   android: true
   ios: true
@@ -40,7 +40,7 @@ flutter_icons:
   ios: true
   remove_alpha_ios: true
   android: "launcher_icon"
-  adaptive_icon_background: "#EEEFF5"
+  adaptive_icon_background: "#2F3844"
   adaptive_icon_foreground: "assets/icon_android.png"
 
 dev_dependencies:

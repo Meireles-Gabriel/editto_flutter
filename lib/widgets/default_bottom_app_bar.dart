@@ -78,7 +78,8 @@ class DefaultBottomAppBar extends ConsumerWidget {
               // Newsstand navigation button
               // Botão de navegação para banca
               DefaultBottomButton(
-                text: texts['newsstand'][0],
+                text: texts['newsstand']
+                    [0], // "Newsstand" / "Banca de Revistas"
                 icon: currentIndex == 0 ? Icons.store : Icons.store_outlined,
                 isSelected: currentIndex == 0,
                 action: () {
@@ -90,7 +91,7 @@ class DefaultBottomAppBar extends ConsumerWidget {
               // Rack navigation button
               // Botão de navegação para estante
               DefaultBottomButton(
-                text: texts['rack'][0],
+                text: texts['rack'][0], // "My Rack" / "Minha Estante"
                 icon: currentIndex == 1 ? Icons.book : Icons.book_outlined,
                 isSelected: currentIndex == 1,
                 action: () {

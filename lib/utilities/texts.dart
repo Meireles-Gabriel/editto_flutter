@@ -33,6 +33,7 @@ List<String> loginPT = [
   'Um email foi enviado com o link para criar uma nova senha.', //13
   'Cancelar', //14
   'Enviar', //15
+  'Login/Cadastro', //16
 ];
 
 // Login page texts in English
@@ -54,18 +55,33 @@ List<String> loginEN = [
   'An email has been sent with the link to create a new password.', //13
   'Cancel', //14
   'Send', //15
+  'Login/Signup', //16
 ];
 
 // Newsstand page texts in Portuguese
 // Textos da página de banca em português
 List<String> newsstandPT = [
   'Banca de Revistas', //0
+  'Digite o tema', //1
+  'ex: Tecnologia, Esportes, Política', //2
+  'Hoje', //3
+  'Última Semana', //4
+  'Último Mês', //5
+  'Comprar por', //6
+  'moedas', //7
 ];
 
 // Newsstand page texts in English
 // Textos da página de banca em inglês
 List<String> newsstandEN = [
   'Newsstand', //0
+  'Enter theme', //1
+  'e.g., Technology, Sports, Politics', //2
+  'Today', //3
+  'Last Week', //4
+  'Last Month', //5
+  'Buy for', //6
+  'coins', //7
 ];
 
 // Rack page texts in Portuguese
