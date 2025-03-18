@@ -8,6 +8,8 @@ import 'package:editto_flutter/widgets/language_switch.dart';
 import 'package:editto_flutter/widgets/theme_switch.dart';
 import 'package:editto_flutter/widgets/show_snack_bar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:editto_flutter/utilities/language_notifier.dart';
@@ -78,16 +80,35 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         } else {
           // Sign up with Firebase
           // Cadastro com Firebase
-          await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          final userCredential =
+              await FirebaseAuth.instance.createUserWithEmailAndPassword(
             email: _emailController.text.trim(),
             password: _passwordController.text.trim(),
           );
 
           // Update user display name
           // Atualiza nome de exibição do usuário
-          await FirebaseAuth.instance.currentUser?.updateDisplayName(
+          await userCredential.user?.updateDisplayName(
             _nameController.text.trim(),
           );
+
+          // Create user document in Firestore
+          // Cria documento do usuário no Firestore
+          await FirebaseFirestore.instance
+              .collection('Users')
+              .doc(userCredential.user!.uid)
+              .set({
+            'name': _nameController.text.trim(),
+            'email': _emailController.text.trim(),
+            'id': userCredential.user!.uid,
+            'coins': 1,
+          });
+
+          // Create user folder in Storage by uploading a placeholder file
+          // Cria pasta do usuário no Storage enviando um arquivo placeholder
+          await FirebaseStorage.instance
+              .ref('${userCredential.user!.uid}/.placeholder')
+              .putString('');
         }
 
         // Navigate to main page on success

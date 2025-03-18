@@ -23,19 +23,43 @@ class LanguageNotifier extends StateNotifier<Map<String, dynamic>> {
   // Carrega as configurações de idioma salvas do armazenamento local
   void _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
-    final languageCode = prefs.getString('language') ??
-        (PlatformDispatcher.instance.locale.languageCode == 'pt' ? 'pt' : 'en');
+    final hasLanguagePreference = prefs.containsKey('language');
 
-    state = {
-      'language': languageCode,
-      'texts': languageCode == 'pt' ? portugueseTexts : englishTexts
-    };
+    // If no language preference is saved, detect from system locale
+    // Se nenhuma preferência de idioma estiver salva, detecta do locale do sistema
+    if (!hasLanguagePreference) {
+      final systemLocale = PlatformDispatcher.instance.locale;
+      final languageCode = systemLocale.languageCode == 'pt' ? 'pt' : 'en';
+
+      // Save the detected language preference
+      // Salva a preferência de idioma detectada
+      await prefs.setString('language', languageCode);
+
+      state = {
+        'language': languageCode,
+        'texts': languageCode == 'pt' ? portugueseTexts : englishTexts
+      };
+    } else {
+      // Load saved language preference
+      // Carrega a preferência de idioma salva
+      final languageCode = prefs.getString('language')!;
+      state = {
+        'language': languageCode,
+        'texts': languageCode == 'pt' ? portugueseTexts : englishTexts
+      };
+    }
   }
 
   // Toggle between English and Portuguese
   // Alterna entre inglês e português
-  void toggleLanguage(bool isEnglish) {
+  Future<void> toggleLanguage(bool isEnglish) async {
     final languageCode = isEnglish ? 'en' : 'pt';
+
+    // Save the new language preference
+    // Salva a nova preferência de idioma
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('language', languageCode);
+
     state = {
       'language': languageCode,
       'texts': isEnglish ? englishTexts : portugueseTexts

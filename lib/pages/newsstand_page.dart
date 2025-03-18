@@ -1,9 +1,11 @@
 // Required imports for newsstand functionality
 // Importações necessárias para funcionalidade da banca
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:editto_flutter/utilities/language_notifier.dart';
 import 'package:editto_flutter/widgets/default_bottom_app_bar.dart';
 import 'package:editto_flutter/widgets/language_switch.dart';
 import 'package:editto_flutter/widgets/theme_switch.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:editto_flutter/utilities/helper_class.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -30,7 +32,26 @@ class _NewsstandPageState extends ConsumerState<NewsstandPage> {
   // Variáveis de estado para tema e período
   final TextEditingController _themeController = TextEditingController();
   TimePeriod _selectedPeriod = TimePeriod.today;
-  final int _coins = 100; // TODO: Replace with actual user coins from database
+  int _coins = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserCoins();
+  }
+
+  Future<void> _loadUserCoins() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final userData = await FirebaseFirestore.instance
+          .collection('Users')
+          .doc(user.uid)
+          .get();
+      setState(() {
+        _coins = userData.data()?['coins'] ?? 0;
+      });
+    }
+  }
 
   // Get price based on selected time period
   // Obtém preço baseado no período selecionado
@@ -41,7 +62,7 @@ class _NewsstandPageState extends ConsumerState<NewsstandPage> {
       case TimePeriod.lastWeek:
         return 3;
       case TimePeriod.lastMonth:
-        return 10;
+        return 7;
     }
   }
 
@@ -71,21 +92,72 @@ class _NewsstandPageState extends ConsumerState<NewsstandPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // Coin counter
+            // Contador de moedas
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.primary,
+                    width: 2,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.monetization_on,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '$_coins',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 32),
+
+            Text(
+              texts['newsstand'][7],
+              // "Enter a theme, set a time period and let us take care of the rest." / "Informe um tema, defina um período e deixe-nos cuidar do resto."
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 16,
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+              ),
+            ),
+            const SizedBox(height: 32),
+
             // Theme input field
             // Campo de entrada de tema
             TextField(
               controller: _themeController,
               decoration: InputDecoration(
-                labelText: texts['newsstand']
-                    [1], // "Enter theme" / "Digite o tema"
-                hintText: texts['newsstand'][
-                    2], // "e.g., Technology, Sports, Politics" / "ex: Tecnologia, Esportes, Política"
+                labelText: texts['newsstand'][1],
+                // "Enter theme" / "Digite o tema"
+                hintText: texts['newsstand'][2],
+                // "e.g., Technology, Sports, Politics" / "ex: Tecnologia, Esportes, Política"
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
                 prefixIcon: const Icon(Icons.edit_note),
               ),
-              maxLines: 3,
+              maxLength: 50,
+              maxLines: null,
+              keyboardType: TextInputType.text,
+              textInputAction: TextInputAction.done,
             ),
             const SizedBox(height: 32),
 
@@ -133,9 +205,21 @@ class _NewsstandPageState extends ConsumerState<NewsstandPage> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: Text(
-                '${texts['newsstand'][6]} $_price ${texts['newsstand'][7]}', // "Buy for X coins" / "Comprar por X moedas"
-                style: const TextStyle(fontSize: 18),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '${texts['newsstand'][6]}', // "Buy for" / "Comprar por"
+                    style: const TextStyle(fontSize: 18),
+                  ),
+                  const SizedBox(width: 8),
+                  const Icon(Icons.monetization_on),
+                  const SizedBox(width: 4),
+                  Text(
+                    '$_price',
+                    style: const TextStyle(fontSize: 18),
+                  ),
+                ],
               ),
             ),
           ],
@@ -148,22 +232,6 @@ class _NewsstandPageState extends ConsumerState<NewsstandPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(texts['newsstand'][0]), // "Newsstand" / "Banca de Revistas"
-        leading: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Row(
-            children: [
-              const Icon(Icons.monetization_on),
-              const SizedBox(width: 4),
-              Text(
-                '$_coins',
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-        ),
         actions: const [
           ThemeSwitch(),
           LanguageSwitch(),

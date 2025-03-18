@@ -92,7 +92,9 @@ class DefaultBottomAppBar extends ConsumerWidget {
               // Botão de navegação para estante
               DefaultBottomButton(
                 text: texts['rack'][0], // "My Rack" / "Minha Estante"
-                icon: currentIndex == 1 ? Icons.book : Icons.book_outlined,
+                icon: currentIndex == 1
+                    ? Icons.collections_bookmark
+                    : Icons.collections_bookmark_outlined,
                 isSelected: currentIndex == 1,
                 action: () {
                   ref.read(currentPageProvider.notifier).state = 1;
