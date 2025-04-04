@@ -1,5 +1,7 @@
 // Required imports for newsstand functionality
 // Importações necessárias para funcionalidade da banca
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:editto_flutter/utilities/language_notifier.dart';
 import 'package:editto_flutter/widgets/default_bottom_app_bar.dart';
@@ -9,6 +11,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:editto_flutter/utilities/helper_class.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:editto_flutter/pages/creation_page.dart';
 
 // Time period enum for magazine generation
 // Enum de período para geração de revista
@@ -33,6 +36,7 @@ class _NewsstandPageState extends ConsumerState<NewsstandPage> {
   final TextEditingController _themeController = TextEditingController();
   TimePeriod _selectedPeriod = TimePeriod.today;
   int _coins = 0;
+  String? _themeError;
 
   @override
   void initState() {
@@ -153,11 +157,21 @@ class _NewsstandPageState extends ConsumerState<NewsstandPage> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 prefixIcon: const Icon(Icons.edit_note),
+                errorText: _themeError,
               ),
-              maxLength: 50,
+              maxLength: 30,
               maxLines: null,
               keyboardType: TextInputType.text,
               textInputAction: TextInputAction.done,
+              onChanged: (_) {
+                // Clear error when user types
+                // Limpa erro quando o usuário digita
+                if (_themeError != null) {
+                  setState(() {
+                    _themeError = null;
+                  });
+                }
+              },
             ),
             const SizedBox(height: 32),
 
@@ -193,7 +207,23 @@ class _NewsstandPageState extends ConsumerState<NewsstandPage> {
             ElevatedButton(
               onPressed: _coins >= _price
                   ? () {
-                      // TODO: Implement magazine generation
+                      if (_themeController.text.trim().length < 2) {
+                        setState(() {
+                          _themeError = texts['newsstand'][8];
+                          // "Theme must be at least 2 characters long." / "O tema deve ter pelo menos 2 caracteres."
+                        });
+                      } else {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CreationPage(
+                              language: ref.read(languageNotifierProvider)['language'],
+                              topic: _themeController.text.trim(),
+                              coins: _price,
+                            ),
+                          ),
+                        );
+                      }
                     }
                   : null,
               style: ElevatedButton.styleFrom(

@@ -17,31 +17,43 @@ class ThemeNotifier extends StateNotifier<ThemeMode> {
   // Carrega o tema salvo do armazenamento local
   void _loadTheme() async {
     final prefs = await SharedPreferences.getInstance();
-    final themeIndex = prefs.getInt('themeMode') ?? 0;
-    state = ThemeMode.values[themeIndex];
+    final hasThemePreference = prefs.containsKey('themeMode');
+
+    if (!hasThemePreference) {
+      // No saved preference, use system default
+      // Sem preferência salva, usar padrão do sistema
+      state = ThemeMode.system;
+    } else {
+      // Use saved preference
+      // Usar preferência salva
+      final themeIndex = prefs.getInt('themeMode')!;
+      state = ThemeMode.values[themeIndex];
+    }
+
     // Update system UI colors based on theme
     // Atualiza as cores da UI do sistema com base no tema
+    _updateSystemUIOverlayStyle();
+  }
+
+  // Update system UI overlay style based on current theme
+  // Atualiza o estilo de sobreposição da UI do sistema com base no tema atual
+  void _updateSystemUIOverlayStyle() {
     SystemChrome.setSystemUIOverlayStyle(
       SystemUiOverlayStyle(
-          systemNavigationBarColor:
-              ThemeMode.values[themeIndex] == ThemeMode.dark
-                  ? darkTheme.colorScheme.surface
-                  : lightTheme.colorScheme.surface),
+        systemNavigationBarColor: state == ThemeMode.dark
+            ? darkTheme.colorScheme.surface
+            : lightTheme.colorScheme.surface,
+      ),
     );
   }
 
   // Toggle between light and dark theme
   // Alterna entre tema claro e escuro
   Future<void> toggleTheme(bool isDarkMode) async {
-    SystemChrome.setSystemUIOverlayStyle(
-      SystemUiOverlayStyle(
-          systemNavigationBarColor: isDarkMode
-              ? darkTheme.colorScheme.surface
-              : lightTheme.colorScheme.surface),
-    );
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt('themeMode', isDarkMode ? 2 : 1);
     state = isDarkMode ? ThemeMode.dark : ThemeMode.light;
+    _updateSystemUIOverlayStyle();
   }
 }
 

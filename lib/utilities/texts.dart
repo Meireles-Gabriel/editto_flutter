@@ -69,6 +69,7 @@ List<String> newsstandPT = [
   'Último Mês', //5
   'Comprar por', //6
   'Informe um tema, defina um período e deixe-nos cuidar do resto.', //7
+  'Informe um tema de pelo menos 2 letras', //8
 ];
 
 // Newsstand page texts in English
@@ -82,6 +83,7 @@ List<String> newsstandEN = [
   'Last Month', //5
   'Buy for', //6
   'Enter a theme, set a time period and let us take care of the rest.', //7
+  'Enter a theme with at least 2 letters', //8
 ];
 
 // Rack page texts in Portuguese
