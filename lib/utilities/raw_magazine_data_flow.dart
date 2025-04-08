@@ -1,16 +1,21 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart';
+import 'dart:async';
 
 // Base URL for API calls
 // URL base para chamadas de API
 const bool useLocalServer = true; // Set to false for production
-const String localApiBaseUrl = 'http://192.168.15.178:8080';
+const String localApiBaseUrl = 'http://192.168.1.2:8080';
 const String productionApiBaseUrl =
     'https://editto-backend-572616648599.us-central1.run.app';
 const String apiBaseUrl =
     useLocalServer ? localApiBaseUrl : productionApiBaseUrl;
+
+// Create a persistent HTTP client with custom configuration
+// Cria um cliente HTTP persistente com configuração personalizada
+final httpClient = http.Client();
 
 // Provider for tracking magazine creation progress
 // Provedor para acompanhar o progresso da criação da revista
@@ -25,15 +30,14 @@ final processDataProvider = StateProvider<Map<String, dynamic>?>((ref) => null);
 final magazineRawDataProvider =
     StateProvider<Map<String, dynamic>?>((ref) => null);
 
-
 // Initialize the magazine creation process
 // Inicializa o processo de criação da revista
 Future<Map<String, dynamic>> initMagazineProcess(
     String language, String theme, int coins) async {
   // Call init_magazine_process using the language, theme and coins
   // Chama init_magazine_process usando o idioma, tema e moedas
-  final response = await http.get(
-      Uri.parse('$apiBaseUrl/init-magazine-process/$language/$theme/$coins'));
+  final response = await http.get(Uri.parse(
+      '$apiBaseUrl/init-magazine-process-endpoint/$language/$theme/$coins'));
 
   if (response.statusCode == 200) {
     final responseData = jsonDecode(response.body);
@@ -49,7 +53,8 @@ Future<Map<String, dynamic>> fetchArticles(
     Map<String, dynamic> processData) async {
   // Call fetch_articles with the processData from initMagazineProcess
   // Chama fetch_articles com os dados do processo de initMagazineProcess
-  final response = await http.post(Uri.parse('$apiBaseUrl/fetch-articles'),
+  final response = await http.post(
+      Uri.parse('$apiBaseUrl/fetch-articles-endpoint'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'process_data': processData}));
 
@@ -67,7 +72,8 @@ Future<Map<String, dynamic>> rewriteArticles(
     Map<String, dynamic> processData) async {
   // Call rewrite_articles with the processData from fetchArticles
   // Chama rewrite_articles com os dados do processo de fetchArticles
-  final response = await http.post(Uri.parse('$apiBaseUrl/rewrite-articles'),
+  final response = await http.post(
+      Uri.parse('$apiBaseUrl/rewrite-articles-endpoint'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'process_data': processData}));
 
@@ -85,7 +91,8 @@ Future<Map<String, dynamic>> generateCoverText(
     Map<String, dynamic> processData) async {
   // Call generate-cover-text with the processData from rewriteArticles
   // Chama generate-cover-text com os dados do processo de rewriteArticles
-  final response = await http.post(Uri.parse('$apiBaseUrl/generate-cover-text'),
+  final response = await http.post(
+      Uri.parse('$apiBaseUrl/generate-cover-text-endpoint'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'process_data': processData}));
 
@@ -101,17 +108,34 @@ Future<Map<String, dynamic>> generateCoverText(
 // Gera imagem da capa
 Future<Map<String, dynamic>> generateImage(
     Map<String, dynamic> processData) async {
-  // Call generate_image with the processData from generateCoverText
-  // Chama generate_image com os dados do processo de generateCoverText
-  final response = await http.post(Uri.parse('$apiBaseUrl/generate-image'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'process_data': processData}));
+  try {
+    // Call generate_image with the processData from generateCoverText
+    // Chama generate_image com os dados do processo de generateCoverText
+    final response = await httpClient
+        .post(
+          Uri.parse('$apiBaseUrl/generate-image-endpoint'),
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Connection': 'keep-alive',
+          },
+          body: jsonEncode({'process_data': processData}),
+        )
+        .timeout(
+            const Duration(seconds: 120)); // Increased timeout to 120 seconds
 
-  if (response.statusCode == 200) {
-    final responseData = jsonDecode(response.body);
-    return responseData;
-  } else {
-    throw Exception('Failed to generate image: ${response.body}');
+    if (response.statusCode == 200) {
+      final responseData = jsonDecode(response.body);
+      return responseData;
+    } else {
+      throw Exception('Failed to generate image: ${response.body}');
+    }
+  } on http.ClientException catch (e) {
+    throw Exception('Connection error while generating image: $e');
+  } on TimeoutException catch (e) {
+    throw Exception('Request timed out while generating image: $e');
+  } catch (e) {
+    throw Exception('Unexpected error while generating image: $e');
   }
 }
 
@@ -122,7 +146,7 @@ Future<Map<String, dynamic>> finalizeMagazineRawData(
   // Call finalize-magazine-raw-data with the processData from generateImage
   // Chama finalize-magazine-raw-data com os dados do processo de generateImage
   final response = await http.post(
-      Uri.parse('$apiBaseUrl/finalize-magazine-raw-data'),
+      Uri.parse('$apiBaseUrl/finalize-magazine-raw-data-endpoint'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'process_data': processData}));
 
@@ -136,7 +160,7 @@ Future<Map<String, dynamic>> finalizeMagazineRawData(
 
 // Execute the full magazine creation process from start to finish
 // Executa o processo completo de criação da revista do início ao fim
-Future<Map<String, dynamic>> createMagazine(
+Future<Map<String, dynamic>> rawMagazineDataFlow(
     WidgetRef ref, String language, String theme, int coins) async {
   // Track the current step being processed
   // Acompanha o passo atual sendo processado
@@ -297,6 +321,8 @@ Future<Map<String, dynamic>> createMagazine(
     if (kDebugMode) {
       print('Error creating magazine: $e');
     }
+    // Clean up the HTTP client
+    httpClient.close();
     rethrow;
   }
 }

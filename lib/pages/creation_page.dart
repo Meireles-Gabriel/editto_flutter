@@ -2,7 +2,7 @@
 // Importações necessárias para funcionalidade da página de criação
 import 'dart:math';
 import 'package:editto_flutter/utilities/language_notifier.dart';
-import 'package:editto_flutter/utilities/magazine_creation.dart';
+import 'package:editto_flutter/utilities/raw_magazine_data_flow.dart';
 import 'package:editto_flutter/widgets/default_bottom_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:editto_flutter/utilities/helper_class.dart';
@@ -45,8 +45,8 @@ class _CreationPageState extends ConsumerState<CreationPage>
 
     // Start magazine creation process
     // Inicia o processo de criação da revista
-    _startCreationProcess(
-      widget.language,
+    _creationProcess(
+      widget.language == 'pt' ? 'pt_BR' : 'en_US',
       widget.topic,
       widget.coins,
     );
@@ -60,8 +60,8 @@ class _CreationPageState extends ConsumerState<CreationPage>
 
   // Simulates the magazine creation process
   // Simula o processo de criação da revista
-  Future<void> _startCreationProcess(language, theme, coins) async {
-    dynamic data = createMagazine(ref, language, theme, coins);
+  Future<void> _creationProcess(language, theme, coins) async {
+    dynamic data = rawMagazineDataFlow(ref, language, theme, coins);
 
     // Once complete, navigate to magazine view (to be implemented)
     // Uma vez concluído, navega para a visualização da revista (a ser implementado)
@@ -185,12 +185,12 @@ class _CreationPageState extends ConsumerState<CreationPage>
     // Constrói scaffold com layout responsivo
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: Text(ref.watch(languageNotifierProvider)['texts']['creation']
                 ?[1] ??
             'Magazine Creation'),
         // "Magazine Creation" / "Criação de Revista"
       ),
-      bottomNavigationBar: const DefaultBottomAppBar(),
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
         child: HelperClass(
