@@ -221,7 +221,7 @@ Future<Map<String, dynamic>> rawMagazineDataFlow(
               await rewriteArticles(ref.read(processDataProvider)!);
           ref.read(processDataProvider.notifier).state =
               rewrittenData['process_data'];
-          ref.read(creationProgressProvider.notifier).state = 0.50;
+          ref.read(creationProgressProvider.notifier).state = 0.45;
           currentStep++;
         } else if (currentStep == 3) {
           // Step 4: Generate cover text
@@ -233,7 +233,7 @@ Future<Map<String, dynamic>> rawMagazineDataFlow(
               await generateCoverText(ref.read(processDataProvider)!);
           ref.read(processDataProvider.notifier).state =
               coverTextData['process_data'];
-          ref.read(creationProgressProvider.notifier).state = 0.65;
+          ref.read(creationProgressProvider.notifier).state = 0.60;
           currentStep++;
         } else if (currentStep == 4) {
           // Step 5: Generate cover image
@@ -244,7 +244,7 @@ Future<Map<String, dynamic>> rawMagazineDataFlow(
           final imageData = await generateImage(ref.read(processDataProvider)!);
           ref.read(processDataProvider.notifier).state =
               imageData['process_data'];
-          ref.read(creationProgressProvider.notifier).state = 0.85;
+          ref.read(creationProgressProvider.notifier).state = 0.75;
           currentStep++;
         } else if (currentStep == 5) {
           // Step 6: Finalize magazine and get raw data
@@ -257,9 +257,7 @@ Future<Map<String, dynamic>> rawMagazineDataFlow(
 
           // Store the final magazine data
           // Armazena os dados finais da revista
-          ref.read(magazineRawDataProvider.notifier).state =
-              finalData['magazine_data'];
-          ref.read(creationProgressProvider.notifier).state = 1.0;
+          ref.read(creationProgressProvider.notifier).state = 0.90;
 
           return finalData['magazine_data'];
         }

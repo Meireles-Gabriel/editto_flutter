@@ -1,12 +1,14 @@
 // Required imports for creation page functionality
 // Importações necessárias para funcionalidade da página de criação
 import 'dart:math';
+import 'package:editto_flutter/pages/error_page.dart';
 import 'package:editto_flutter/utilities/language_notifier.dart';
+import 'package:editto_flutter/utilities/magazine_creation_flow.dart';
 import 'package:editto_flutter/utilities/raw_magazine_data_flow.dart';
-import 'package:editto_flutter/widgets/default_bottom_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:editto_flutter/utilities/helper_class.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:printing/printing.dart';
 
 // Provider for tracking magazine creation progress
 // Provedor para acompanhar o progresso da criação da revista
@@ -58,16 +60,72 @@ class _CreationPageState extends ConsumerState<CreationPage>
     super.dispose();
   }
 
-  // Simulates the magazine creation process
-  // Simula o processo de criação da revista
   Future<void> _creationProcess(language, theme, coins) async {
-    dynamic data = rawMagazineDataFlow(ref, language, theme, coins);
+    try {
+      // Create magazine
+      await createMagazine(ref, language, theme, coins);
 
-    // Once complete, navigate to magazine view (to be implemented)
-    // Uma vez concluído, navega para a visualização da revista (a ser implementado)
-    if (mounted) {
-      // TODO: Navigate to magazine view
-      // TODO: Navegar para a visualização da revista
+      // Check if we have PDF data
+      final pdfData = ref.read(pdfBytesProvider);
+      if (pdfData == null) {
+        throw Exception('PDF generation failed');
+      }
+
+      // If creation is successful and not currently disposed, show the PDF preview
+      if (mounted) {
+        await showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => Dialog.fullscreen(
+            child: Scaffold(
+              appBar: AppBar(
+                title: Text(widget.topic),
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ],
+              ),
+              body: PdfPreview(
+                build: (format) => pdfData,
+                canChangeOrientation: false,
+                canChangePageFormat: false,
+                allowPrinting: true,
+                allowSharing: true,
+              ),
+            ),
+          ),
+        );
+
+        // Return to previous screen after dialog is closed
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
+      }
+    } catch (e) {
+      // If an error occurs and not currently disposed, navigate to error page
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => ErrorPage(
+              errorMessage: e.toString(),
+              onRetry: () {
+                Navigator.of(context).pop();
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(
+                    builder: (context) => CreationPage(
+                      language: widget.language,
+                      topic: widget.topic,
+                      coins: widget.coins,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        );
+      }
     }
   }
 
