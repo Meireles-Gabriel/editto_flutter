@@ -145,7 +145,7 @@ class _CreationPageState extends ConsumerState<CreationPage>
             // Título do tópico
             Text(
               //widget.topic,
-              ref.watch(magazineRawDataProvider).toString(),
+              widget.topic,
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: Theme.of(context).colorScheme.primary,
