@@ -103,8 +103,8 @@ List<String> rackEN = [
   'My Rack', //0
   'Error loading your magazines.', //1
   'You don\'t have any magazines yet.', //2
-  'Imagem', //3
-  'Capa', //4
+  'Image', //3
+  'Cover', //4
   'Display as', //5
 ];
 
