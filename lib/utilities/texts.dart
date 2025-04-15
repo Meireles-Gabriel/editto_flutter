@@ -90,12 +90,22 @@ List<String> newsstandEN = [
 // Textos da página de estante em português
 List<String> rackPT = [
   'Minha Estante', //0
+  'Erro ao carregar suas revistas.', //1
+  'Você ainda não tem revistas.', //2
+  'Imagem', //3
+  'Capa', //4
+  'Exibir como', //5
 ];
 
 // Rack page texts in English
 // Textos da página de estante em inglês
 List<String> rackEN = [
   'My Rack', //0
+  'Error loading your magazines.', //1
+  'You don\'t have any magazines yet.', //2
+  'Imagem', //3
+  'Capa', //4
+  'Display as', //5
 ];
 
 // Map of all Portuguese texts

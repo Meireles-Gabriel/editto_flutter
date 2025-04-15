@@ -7,7 +7,7 @@ import 'dart:async';
 // Base URL for API calls
 // URL base para chamadas de API
 const bool useLocalServer = true; // Set to false for production
-const String localApiBaseUrl = 'http://192.168.1.2:8080';
+const String localApiBaseUrl = 'http://192.168.1.6:8080';
 const String productionApiBaseUrl =
     'https://editto-backend-572616648599.us-central1.run.app';
 const String apiBaseUrl =
@@ -56,7 +56,8 @@ Future<Map<String, dynamic>> fetchArticles(
   final response = await http.post(
       Uri.parse('$apiBaseUrl/fetch-articles-endpoint'),
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'process_data': processData}));
+      body: jsonEncode({'process_data': processData}))
+      .timeout(const Duration(seconds: 120));
 
   if (response.statusCode == 200) {
     final responseData = jsonDecode(response.body);
@@ -75,7 +76,8 @@ Future<Map<String, dynamic>> rewriteArticles(
   final response = await http.post(
       Uri.parse('$apiBaseUrl/rewrite-articles-endpoint'),
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'process_data': processData}));
+      body: jsonEncode({'process_data': processData}))
+      .timeout(const Duration(seconds: 120));
 
   if (response.statusCode == 200) {
     final responseData = jsonDecode(response.body);
@@ -94,7 +96,8 @@ Future<Map<String, dynamic>> generateCoverText(
   final response = await http.post(
       Uri.parse('$apiBaseUrl/generate-cover-text-endpoint'),
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'process_data': processData}));
+      body: jsonEncode({'process_data': processData}))
+      .timeout(const Duration(seconds: 120));
 
   if (response.statusCode == 200) {
     final responseData = jsonDecode(response.body);
@@ -148,7 +151,8 @@ Future<Map<String, dynamic>> finalizeMagazineRawData(
   final response = await http.post(
       Uri.parse('$apiBaseUrl/finalize-magazine-raw-data-endpoint'),
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'process_data': processData}));
+      body: jsonEncode({'process_data': processData}))
+      .timeout(const Duration(seconds: 120));
 
   if (response.statusCode == 200) {
     final responseData = jsonDecode(response.body);
@@ -257,7 +261,6 @@ Future<Map<String, dynamic>> rawMagazineDataFlow(
 
           // Store the final magazine data
           // Armazena os dados finais da revista
-          ref.read(creationProgressProvider.notifier).state = 0.90;
 
           return finalData['magazine_data'];
         }
@@ -298,7 +301,7 @@ Future<Map<String, dynamic>> rawMagazineDataFlow(
           // Adjust progress indicator to show we're redoing a step
           // Ajusta o indicador de progresso para mostrar que estamos refazendo um passo
           ref.read(creationProgressProvider.notifier).state =
-              [0.0, 0.15, 0.30, 0.50, 0.65, 0.85][currentStep];
+              [0.0, 0.15, 0.30, 0.45, 0.60, 0.75][currentStep];
         } else {
           // Can't go back from step 0
           // Não é possível voltar do passo 0

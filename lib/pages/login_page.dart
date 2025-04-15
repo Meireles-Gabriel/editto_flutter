@@ -9,7 +9,6 @@ import 'package:editto_flutter/widgets/theme_switch.dart';
 import 'package:editto_flutter/widgets/show_snack_bar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:editto_flutter/utilities/language_notifier.dart';
@@ -103,12 +102,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             'id': userCredential.user!.uid,
             'coins': 1,
           });
-
-          // Create user folder in Storage by uploading a placeholder file
-          // Cria pasta do usuário no Storage enviando um arquivo placeholder
-          await FirebaseStorage.instance
-              .ref('${userCredential.user!.uid}/.placeholder')
-              .putString('');
         }
 
         // Navigate to main page on success

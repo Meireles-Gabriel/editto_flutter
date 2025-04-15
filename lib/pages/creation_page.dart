@@ -1,14 +1,19 @@
 // Required imports for creation page functionality
 // Importações necessárias para funcionalidade da página de criação
 import 'dart:math';
+import 'dart:convert';
 import 'package:editto_flutter/pages/error_page.dart';
+import 'package:editto_flutter/pages/pdf_viewer_page.dart';
 import 'package:editto_flutter/utilities/language_notifier.dart';
 import 'package:editto_flutter/utilities/magazine_creation_flow.dart';
 import 'package:editto_flutter/utilities/raw_magazine_data_flow.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:editto_flutter/utilities/helper_class.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:printing/printing.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 // Provider for tracking magazine creation progress
 // Provedor para acompanhar o progresso da criação da revista
@@ -71,34 +76,136 @@ class _CreationPageState extends ConsumerState<CreationPage>
         throw Exception('PDF generation failed');
       }
 
-      // If creation is successful and not currently disposed, show the PDF preview
+      // Get magazine data from the provider
+      final magazineData = ref.read(processDataProvider);
+      if (magazineData == null) {
+        throw Exception('Magazine data not available');
+      }
+
+      // Upload PDF to Firebase Storage
+      final userID = FirebaseAuth.instance.currentUser?.uid;
+      if (userID == null) {
+        throw Exception('User not authenticated');
+      }
+
+      // Create date-based folder structure for easy sorting
+      final now = DateTime.now();
+      final dateFolder =
+          '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}_${now.hour.toString().padLeft(2, '0')}-${now.minute.toString().padLeft(2, '0')}-${now.second.toString().padLeft(2, '0')}';
+      final sanitizedTopic =
+          widget.topic.replaceAll(RegExp(r'[^\w\s]+'), '').replaceAll(' ', '_');
+
+      // Base storage path for all files related to this magazine
+      final basePath = 'users/$userID/$dateFolder';
+
+      try {
+        // 1. Upload PDF
+        final pdfFileName = '$sanitizedTopic.pdf';
+        final pdfRef =
+            FirebaseStorage.instance.ref().child('$basePath/$pdfFileName');
+
+        await pdfRef.putData(
+          pdfData,
+          SettableMetadata(contentType: 'application/pdf'),
+        );
+        if (kDebugMode) {
+          print('PDF uploaded successfully');
+        }
+
+        // 2. Upload cover image if available
+        if (magazineData['cover_image'] != null) {
+          try {
+            // Decode the cover image from base64
+            final coverImageBytes = base64Decode(magazineData['cover_image']);
+            final imageFileName = '${sanitizedTopic}_cover.jpg';
+            final imageRef = FirebaseStorage.instance
+                .ref()
+                .child('$basePath/$imageFileName');
+
+            await imageRef.putData(
+              coverImageBytes,
+              SettableMetadata(contentType: 'image/jpeg'),
+            );
+            if (kDebugMode) {
+              print('Cover image uploaded successfully');
+            }
+          } catch (imageError) {
+            if (kDebugMode) {
+              print('Error uploading cover image: $imageError');
+            }
+          }
+        }
+
+        // 3. Upload first page image if available
+        if (magazineData['first_page_image'] != null) {
+          try {
+            // Decode the first page image from base64
+            final firstPageImageBytes =
+                base64Decode(magazineData['first_page_image']);
+            final firstPageFileName = '${sanitizedTopic}_first_page.jpg';
+            final firstPageRef = FirebaseStorage.instance
+                .ref()
+                .child('$basePath/$firstPageFileName');
+
+            await firstPageRef.putData(
+              firstPageImageBytes,
+              SettableMetadata(contentType: 'image/jpeg'),
+            );
+            if (kDebugMode) {
+              print('First page image uploaded successfully');
+            }
+          } catch (firstPageError) {
+            if (kDebugMode) {
+              print('Error uploading first page image: $firstPageError');
+            }
+          }
+        }
+
+        ref.read(creationProgressProvider.notifier).state = 0.95;
+
+        // 4. Create a Firestore document to store metadata
+        final magazineMetadata = {
+          'theme': widget.topic,
+          'language': language,
+          'date': now.toIso8601String(),
+          'coins': coins,
+          'folderPath': basePath,
+          'pdfFileName': pdfFileName,
+          'coverImageFileName': '${sanitizedTopic}_cover.jpg',
+          'firstPageImageFileName': '${sanitizedTopic}_first_page.jpg',
+          'createdAt': FieldValue.serverTimestamp(),
+        };
+
+        // Save to Firestore with document ID matching the folder name
+        await FirebaseFirestore.instance
+            .collection('Users')
+            .doc(userID)
+            .collection('Magazines')
+            .doc(dateFolder)
+            .set(magazineMetadata);
+
+        if (kDebugMode) {
+          print('Magazine metadata saved to Firestore');
+        }
+      } catch (uploadError) {
+        if (kDebugMode) {
+          print('Error uploading files: $uploadError');
+        }
+        // Continue to PDF viewer even if upload fails
+      }
+
+      // If creation is successful and not currently disposed, navigate to PDF viewer
       if (mounted) {
-        await showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (context) => Dialog.fullscreen(
-            child: Scaffold(
-              appBar: AppBar(
-                title: Text(widget.topic),
-                actions: [
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
-                ],
-              ),
-              body: PdfPreview(
-                build: (format) => pdfData,
-                canChangeOrientation: false,
-                canChangePageFormat: false,
-                allowPrinting: true,
-                allowSharing: true,
-              ),
+        await Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => PdfViewerPage(
+              title: widget.topic,
+              initialPdfData: pdfData,
             ),
           ),
         );
 
-        // Return to previous screen after dialog is closed
+        // Return to previous screen after viewer is closed
         if (mounted) {
           Navigator.of(context).pop();
         }
