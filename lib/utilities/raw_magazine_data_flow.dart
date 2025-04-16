@@ -53,10 +53,10 @@ Future<Map<String, dynamic>> fetchArticles(
     Map<String, dynamic> processData) async {
   // Call fetch_articles with the processData from initMagazineProcess
   // Chama fetch_articles com os dados do processo de initMagazineProcess
-  final response = await http.post(
-      Uri.parse('$apiBaseUrl/fetch-articles-endpoint'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'process_data': processData}))
+  final response = await http
+      .post(Uri.parse('$apiBaseUrl/fetch-articles-endpoint'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({'process_data': processData}))
       .timeout(const Duration(seconds: 120));
 
   if (response.statusCode == 200) {
@@ -73,10 +73,10 @@ Future<Map<String, dynamic>> rewriteArticles(
     Map<String, dynamic> processData) async {
   // Call rewrite_articles with the processData from fetchArticles
   // Chama rewrite_articles com os dados do processo de fetchArticles
-  final response = await http.post(
-      Uri.parse('$apiBaseUrl/rewrite-articles-endpoint'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'process_data': processData}))
+  final response = await http
+      .post(Uri.parse('$apiBaseUrl/rewrite-articles-endpoint'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({'process_data': processData}))
       .timeout(const Duration(seconds: 120));
 
   if (response.statusCode == 200) {
@@ -93,10 +93,10 @@ Future<Map<String, dynamic>> generateCoverText(
     Map<String, dynamic> processData) async {
   // Call generate-cover-text with the processData from rewriteArticles
   // Chama generate-cover-text com os dados do processo de rewriteArticles
-  final response = await http.post(
-      Uri.parse('$apiBaseUrl/generate-cover-text-endpoint'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'process_data': processData}))
+  final response = await http
+      .post(Uri.parse('$apiBaseUrl/generate-cover-text-endpoint'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({'process_data': processData}))
       .timeout(const Duration(seconds: 120));
 
   if (response.statusCode == 200) {
@@ -148,10 +148,10 @@ Future<Map<String, dynamic>> finalizeMagazineRawData(
     Map<String, dynamic> processData) async {
   // Call finalize-magazine-raw-data with the processData from generateImage
   // Chama finalize-magazine-raw-data com os dados do processo de generateImage
-  final response = await http.post(
-      Uri.parse('$apiBaseUrl/finalize-magazine-raw-data-endpoint'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'process_data': processData}))
+  final response = await http
+      .post(Uri.parse('$apiBaseUrl/finalize-magazine-raw-data-endpoint'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({'process_data': processData}))
       .timeout(const Duration(seconds: 120));
 
   if (response.statusCode == 200) {
@@ -201,7 +201,7 @@ Future<Map<String, dynamic>> rawMagazineDataFlow(
           final initData = await initMagazineProcess(language, theme, coins);
           ref.read(processDataProvider.notifier).state =
               initData['process_data'];
-          ref.read(creationProgressProvider.notifier).state = 0.15;
+          ref.read(creationProgressProvider.notifier).state = 0.10;
           currentStep++;
         } else if (currentStep == 1) {
           // Step 2: Fetch news articles
@@ -213,7 +213,7 @@ Future<Map<String, dynamic>> rawMagazineDataFlow(
               await fetchArticles(ref.read(processDataProvider)!);
           ref.read(processDataProvider.notifier).state =
               articlesData['process_data'];
-          ref.read(creationProgressProvider.notifier).state = 0.30;
+          ref.read(creationProgressProvider.notifier).state = 0.20;
           currentStep++;
         } else if (currentStep == 2) {
           // Step 3: Rewrite articles for magazine style
@@ -225,7 +225,7 @@ Future<Map<String, dynamic>> rawMagazineDataFlow(
               await rewriteArticles(ref.read(processDataProvider)!);
           ref.read(processDataProvider.notifier).state =
               rewrittenData['process_data'];
-          ref.read(creationProgressProvider.notifier).state = 0.45;
+          ref.read(creationProgressProvider.notifier).state = 0.30;
           currentStep++;
         } else if (currentStep == 3) {
           // Step 4: Generate cover text
@@ -237,7 +237,7 @@ Future<Map<String, dynamic>> rawMagazineDataFlow(
               await generateCoverText(ref.read(processDataProvider)!);
           ref.read(processDataProvider.notifier).state =
               coverTextData['process_data'];
-          ref.read(creationProgressProvider.notifier).state = 0.60;
+          ref.read(creationProgressProvider.notifier).state = 0.40;
           currentStep++;
         } else if (currentStep == 4) {
           // Step 5: Generate cover image
@@ -248,7 +248,7 @@ Future<Map<String, dynamic>> rawMagazineDataFlow(
           final imageData = await generateImage(ref.read(processDataProvider)!);
           ref.read(processDataProvider.notifier).state =
               imageData['process_data'];
-          ref.read(creationProgressProvider.notifier).state = 0.75;
+          ref.read(creationProgressProvider.notifier).state = 0.50;
           currentStep++;
         } else if (currentStep == 5) {
           // Step 6: Finalize magazine and get raw data
@@ -301,7 +301,7 @@ Future<Map<String, dynamic>> rawMagazineDataFlow(
           // Adjust progress indicator to show we're redoing a step
           // Ajusta o indicador de progresso para mostrar que estamos refazendo um passo
           ref.read(creationProgressProvider.notifier).state =
-              [0.0, 0.15, 0.30, 0.45, 0.60, 0.75][currentStep];
+              [0.0, 0.10, 0.20, 0.30, 0.40, 0.50][currentStep];
         } else {
           // Can't go back from step 0
           // Não é possível voltar do passo 0

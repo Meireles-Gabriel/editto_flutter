@@ -52,19 +52,14 @@ class ErrorPage extends ConsumerWidget {
               ),
               const SizedBox(height: 48),
               if (onRetry != null)
-                ElevatedButton(
-                  onPressed: onRetry,
-                  child: Text(texts['error']?[2] ?? 'Try Again'),
-                ),
-              const SizedBox(height: 16),
-              TextButton(
-                onPressed: () => Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(
-                    builder: (context) => const NewsstandPage(),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(
+                      builder: (context) => const NewsstandPage(),
+                    ),
                   ),
+                  child: Text(texts['error']?[3] ?? 'Go Back'),
                 ),
-                child: Text(texts['error']?[3] ?? 'Go Back'),
-              ),
             ],
           ),
         ),

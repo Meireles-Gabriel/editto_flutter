@@ -58,6 +58,38 @@ List<String> loginEN = [
   'Login/Signup', //16
 ];
 
+// Buy page texts in Portuguese
+// Textos da página de compra em português
+List<String> buyPT = [
+  'Comprar Moedas', //0
+  'Selecione um pacote para comprar moedas', //1
+  'Padrão', //2
+  'Popular', //3
+  'Premium', //4
+  'Popular', //5
+  'Comprar Agora', //6
+  'Compra realizada com sucesso', //7
+  'moedas', //8
+  'Falha ao completar a compra. Por favor, tente novamente.', //9
+  '% OFF', //10
+];
+
+// Buy page texts in English
+// Textos da página de compra em inglês
+List<String> buyEN = [
+  'Buy Coins', //0
+  'Select a package to purchase coins', //1
+  'Standard', //2
+  'Popular', //3
+  'Premium', //4
+  'Popular', //5
+  'Buy Now', //6
+  'Successfully purchased', //7
+  'coins', //8
+  'Failed to complete purchase. Please try again.', //9
+  '% OFF', //10
+];
+
 // Newsstand page texts in Portuguese
 // Textos da página de banca em português
 List<String> newsstandPT = [
@@ -115,6 +147,7 @@ Map<String, List<String>> portugueseTexts = {
   'login': loginPT,
   'newsstand': newsstandPT,
   'rack': rackPT,
+  'buy': buyPT,
 };
 
 // Map of all English texts
@@ -124,4 +157,5 @@ Map<String, List<String>> englishTexts = {
   'login': loginEN,
   'newsstand': newsstandEN,
   'rack': rackEN,
+  'buy': buyEN,
 };

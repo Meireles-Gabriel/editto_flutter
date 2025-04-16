@@ -5,7 +5,6 @@ import 'package:flutter/foundation.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pdf/widgets.dart';
 import 'package:printing/printing.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
@@ -18,6 +17,8 @@ final pdfBytesProvider = StateProvider<Uint8List?>((ref) => null);
 final firstPageImageProvider = StateProvider<String?>((ref) => null);
 
 final summaryPosition = Random().nextInt(3);
+
+// No need for Flutter clipper, we'll use a simpler approach with PDF
 
 // Create the magazine PDF
 Future<Uint8List> createMagazinePDF(Map<String, dynamic> magazineData) async {
@@ -50,10 +51,11 @@ Future<Uint8List> createMagazinePDF(Map<String, dynamic> magazineData) async {
   final summary1 = coverContent['summary1'];
   final summary2 = coverContent['summary2'];
 
-  Font fontMagazineName = await PdfGoogleFonts.montserratRegular();
-  Font fontCoverTitle = await PdfGoogleFonts.montserratBold();
-  Font fontArticleTitle = await PdfGoogleFonts.montserratMedium();
-  Font fontBody = await PdfGoogleFonts.montserratRegular();
+  final fontMagazineName = await PdfGoogleFonts.montserratRegular();
+  final fontCoverTitle = await PdfGoogleFonts.montserratBold();
+  final fontCoverSummary = await PdfGoogleFonts.montserratMedium();
+  final fontArticleTitle = await PdfGoogleFonts.montserratMedium();
+  final fontBody = await PdfGoogleFonts.montserratRegular();
 
   // Create cover page
   pdf.addPage(
@@ -91,14 +93,31 @@ Future<Uint8List> createMagazinePDF(Map<String, dynamic> magazineData) async {
                     children: [
                       pw.Image(iconImage, width: 50, height: 50),
                       pw.SizedBox(width: 10),
-                      pw.Text(
-                        'ÉDITTO',
-                        style: pw.TextStyle(
-                          font: fontMagazineName,
-                          fontSize: 40,
-                          fontWeight: pw.FontWeight.bold,
-                          color: PdfColors.white,
-                        ),
+                      pw.Stack(
+                        children: [
+                          pw.Positioned(
+                            left: 2,
+                            top: 2,
+                            child: pw.Text(
+                              'ÉDITTO',
+                              style: pw.TextStyle(
+                                font: fontMagazineName,
+                                fontSize: 40,
+                                fontWeight: pw.FontWeight.bold,
+                                color: PdfColors.black,
+                              ),
+                            ),
+                          ),
+                          pw.Text(
+                            'ÉDITTO',
+                            style: pw.TextStyle(
+                              font: fontMagazineName,
+                              fontSize: 40,
+                              fontWeight: pw.FontWeight.bold,
+                              color: PdfColors.white,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -111,36 +130,58 @@ Future<Uint8List> createMagazinePDF(Map<String, dynamic> magazineData) async {
                           children: [
                             pw.Container(
                               width: 100,
-                              child: pw.Text(
-                                summary1,
-                                style: pw.TextStyle(
-                                  background: pw.BoxDecoration(
-                                    border: pw.Border.all(
-                                      width: 5,
+                              child: pw.Stack(
+                                children: [
+                                  pw.Positioned(
+                                    left: 1,
+                                    top: 1,
+                                    child: pw.Text(
+                                      summary1,
+                                      style: pw.TextStyle(
+                                        font: fontCoverSummary,
+                                        fontSize: 14,
+                                        color: PdfColors.black,
+                                      ),
                                     ),
                                   ),
-                                  font: fontBody,
-                                  fontSize: 14,
-                                  color: PdfColors.white,
-                                ),
-                                textAlign: TextAlign.left,
+                                  pw.Text(
+                                    summary1,
+                                    style: pw.TextStyle(
+                                      font: fontCoverSummary,
+                                      fontSize: 14,
+                                      color: PdfColors.white,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                             pw.Container(
                               width: 100,
-                              child: pw.Text(
-                                summary2,
-                                style: pw.TextStyle(
-                                  background: pw.BoxDecoration(
-                                    border: pw.Border.all(
-                                      width: 5,
+                              child: pw.Stack(
+                                children: [
+                                  pw.Positioned(
+                                    left: 1,
+                                    top: 1,
+                                    child: pw.Text(
+                                      summary2,
+                                      textAlign: pw.TextAlign.right,
+                                      style: pw.TextStyle(
+                                        font: fontCoverSummary,
+                                        fontSize: 14,
+                                        color: PdfColors.black,
+                                      ),
                                     ),
                                   ),
-                                  font: fontBody,
-                                  fontSize: 14,
-                                  color: PdfColors.white,
-                                ),
-                                textAlign: TextAlign.right,
+                                  pw.Text(
+                                    summary2,
+                                    textAlign: pw.TextAlign.right,
+                                    style: pw.TextStyle(
+                                      font: fontCoverSummary,
+                                      fontSize: 14,
+                                      color: PdfColors.white,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
@@ -156,19 +197,31 @@ Future<Uint8List> createMagazinePDF(Map<String, dynamic> magazineData) async {
                           children: [
                             pw.Container(
                               width: 100,
-                              child: pw.Text(
-                                summary2,
-                                style: pw.TextStyle(
-                                  background: pw.BoxDecoration(
-                                    border: pw.Border.all(
-                                      width: 10,
+                              child: pw.Stack(
+                                children: [
+                                  pw.Positioned(
+                                    left: 1,
+                                    top: 1,
+                                    child: pw.Text(
+                                      summary2,
+                                      textAlign: pw.TextAlign.right,
+                                      style: pw.TextStyle(
+                                        font: fontCoverSummary,
+                                        fontSize: 14,
+                                        color: PdfColors.black,
+                                      ),
                                     ),
                                   ),
-                                  font: fontBody,
-                                  fontSize: 14,
-                                  color: PdfColors.white,
-                                ),
-                                textAlign: TextAlign.right,
+                                  pw.Text(
+                                    summary2,
+                                    textAlign: pw.TextAlign.right,
+                                    style: pw.TextStyle(
+                                      font: fontCoverSummary,
+                                      fontSize: 14,
+                                      color: PdfColors.white,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
@@ -178,19 +231,29 @@ Future<Uint8List> createMagazinePDF(Map<String, dynamic> magazineData) async {
                           children: [
                             pw.Container(
                               width: 100,
-                              child: pw.Text(
-                                summary1,
-                                style: pw.TextStyle(
-                                  background: pw.BoxDecoration(
-                                    border: pw.Border.all(
-                                      width: 10,
+                              child: pw.Stack(
+                                children: [
+                                  pw.Positioned(
+                                    left: 1,
+                                    top: 1,
+                                    child: pw.Text(
+                                      summary1,
+                                      style: pw.TextStyle(
+                                        font: fontCoverSummary,
+                                        fontSize: 14,
+                                        color: PdfColors.black,
+                                      ),
                                     ),
                                   ),
-                                  font: fontBody,
-                                  fontSize: 14,
-                                  color: PdfColors.white,
-                                ),
-                                textAlign: TextAlign.left,
+                                  pw.Text(
+                                    summary1,
+                                    style: pw.TextStyle(
+                                      font: fontCoverSummary,
+                                      fontSize: 14,
+                                      color: PdfColors.white,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
@@ -206,19 +269,29 @@ Future<Uint8List> createMagazinePDF(Map<String, dynamic> magazineData) async {
                           children: [
                             pw.Container(
                               width: 100,
-                              child: pw.Text(
-                                summary1,
-                                style: pw.TextStyle(
-                                  background: pw.BoxDecoration(
-                                    border: pw.Border.all(
-                                      width: 10,
+                              child: pw.Stack(
+                                children: [
+                                  pw.Positioned(
+                                    left: 1,
+                                    top: 1,
+                                    child: pw.Text(
+                                      summary1,
+                                      style: pw.TextStyle(
+                                        font: fontCoverSummary,
+                                        fontSize: 14,
+                                        color: PdfColors.black,
+                                      ),
                                     ),
                                   ),
-                                  font: fontBody,
-                                  fontSize: 14,
-                                  color: PdfColors.white,
-                                ),
-                                textAlign: TextAlign.left,
+                                  pw.Text(
+                                    summary1,
+                                    style: pw.TextStyle(
+                                      font: fontCoverSummary,
+                                      fontSize: 14,
+                                      color: PdfColors.white,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
@@ -228,19 +301,31 @@ Future<Uint8List> createMagazinePDF(Map<String, dynamic> magazineData) async {
                           children: [
                             pw.Container(
                               width: 100,
-                              child: pw.Text(
-                                summary2,
-                                style: pw.TextStyle(
-                                  background: pw.BoxDecoration(
-                                    border: pw.Border.all(
-                                      width: 10,
+                              child: pw.Stack(
+                                children: [
+                                  pw.Positioned(
+                                    left: 1,
+                                    top: 1,
+                                    child: pw.Text(
+                                      summary2,
+                                      textAlign: pw.TextAlign.right,
+                                      style: pw.TextStyle(
+                                        font: fontCoverSummary,
+                                        fontSize: 14,
+                                        color: PdfColors.black,
+                                      ),
                                     ),
                                   ),
-                                  font: fontBody,
-                                  fontSize: 14,
-                                  color: PdfColors.white,
-                                ),
-                                textAlign: TextAlign.right,
+                                  pw.Text(
+                                    summary2,
+                                    textAlign: pw.TextAlign.right,
+                                    style: pw.TextStyle(
+                                      font: fontCoverSummary,
+                                      fontSize: 14,
+                                      color: PdfColors.white,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
@@ -251,31 +336,65 @@ Future<Uint8List> createMagazinePDF(Map<String, dynamic> magazineData) async {
                   pw.Column(
                     crossAxisAlignment: pw.CrossAxisAlignment.center,
                     children: [
-                      pw.Text(
-                        mainHeadline,
-                        style: pw.TextStyle(
-                          font: fontCoverTitle,
-                          fontSize: mainHeadline.length <= 10 ? 68 : 54,
-                          fontWeight: pw.FontWeight.bold,
-                          color: PdfColors.white,
-                        ),
+                      pw.Stack(
+                        children: [
+                          pw.Positioned(
+                            left: 2,
+                            top: 2,
+                            child: pw.Text(
+                              mainHeadline,
+                              textAlign: pw.TextAlign.center,
+                              style: pw.TextStyle(
+                                font: fontCoverTitle,
+                                fontSize: mainHeadline.length <= 10 ? 68 : 54,
+                                fontWeight: pw.FontWeight.bold,
+                                color: PdfColors.black,
+                              ),
+                            ),
+                          ),
+                          pw.Text(
+                            mainHeadline,
+                            textAlign: pw.TextAlign.center,
+                            style: pw.TextStyle(
+                              font: fontCoverTitle,
+                              fontSize: mainHeadline.length <= 10 ? 68 : 54,
+                              fontWeight: pw.FontWeight.bold,
+                              color: PdfColors.white,
+                            ),
+                          ),
+                        ],
                       ),
                       pw.SizedBox(
                         width: 300,
-                        child: Divider(
+                        child: pw.Divider(
                           color: PdfColors.white,
                         ),
                       ),
-                      pw.SizedBox(
-                        height: 2,
-                      ),
-                      pw.Text(
-                        subheading,
-                        style: pw.TextStyle(
-                          font: fontBody,
-                          fontSize: 18,
-                          color: PdfColors.white,
-                        ),
+                      pw.Stack(
+                        children: [
+                          pw.Positioned(
+                            left: 1,
+                            top: 1,
+                            child: pw.Text(
+                              subheading,
+                              textAlign: pw.TextAlign.center,
+                              style: pw.TextStyle(
+                                font: fontCoverSummary,
+                                fontSize: 18,
+                                color: PdfColors.black,
+                              ),
+                            ),
+                          ),
+                          pw.Text(
+                            subheading,
+                            textAlign: pw.TextAlign.center,
+                            style: pw.TextStyle(
+                              font: fontCoverSummary,
+                              fontSize: 18,
+                              color: PdfColors.white,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -377,16 +496,21 @@ Future<Uint8List> createMagazinePDF(Map<String, dynamic> magazineData) async {
   }
 
   // Return the PDF as bytes
-  return pdf.save();
+  final pdfBytes = await pdf.save();
+  // Create a new Uint8List to ensure we have a fresh copy of the data
+  return Uint8List.fromList(pdfBytes);
 }
 
 // Extract the first page of the PDF as an image
 Future<String?> extractFirstPageImage(Uint8List pdfBytes) async {
   try {
+    // Create a fresh copy to avoid using a potentially detached ArrayBuffer
+    final pdfBytesCopy = Uint8List.fromList(pdfBytes);
+
     // Method 1: Use the printing package to render the first page
     // This works on most platforms including web
     final doc = await Printing.raster(
-      pdfBytes,
+      pdfBytesCopy,
       pages: [0], // Extract only the first page (index 0)
       dpi: 150, // Lower DPI to save memory
     ).first;
@@ -404,14 +528,17 @@ Future<String?> extractFirstPageImage(Uint8List pdfBytes) async {
     // Fallback method for mobile/desktop
     try {
       if (!kIsWeb) {
+        // Create another fresh copy for the fallback method
+        final fallbackPdfBytesCopy = Uint8List.fromList(pdfBytes);
+
         // Save PDF to a temporary file
         final tempDir = await getTemporaryDirectory();
         final tempFile = File('${tempDir.path}/temp_extract.pdf');
-        await tempFile.writeAsBytes(pdfBytes);
+        await tempFile.writeAsBytes(fallbackPdfBytesCopy);
 
         // Use the printing package with the file path
         final doc = await Printing.raster(
-          pdfBytes,
+          fallbackPdfBytesCopy,
           pages: [0],
           dpi: 120,
         ).first;
@@ -453,8 +580,11 @@ Future<void> createMagazine(
     // Generate the PDF
     final pdfBytes = await createMagazinePDF(magazineData);
 
+    // Create a copy for extraction to prevent detachment issues
+    final pdfBytesForExtraction = Uint8List.fromList(pdfBytes);
+
     // Extract the first page as an image
-    final firstPageImage = await extractFirstPageImage(pdfBytes);
+    final firstPageImage = await extractFirstPageImage(pdfBytesForExtraction);
 
     // Update the magazine data with the first page image
     if (firstPageImage != null) {
@@ -465,7 +595,10 @@ Future<void> createMagazine(
     // This is an async function so we're not in a build phase
     ref.read(firstPageImageProvider.notifier).state = firstPageImage;
     ref.read(processDataProvider.notifier).state = magazineData;
-    ref.read(pdfBytesProvider.notifier).state = pdfBytes;
+
+    // Create a fresh copy for the provider to avoid detachment
+    final pdfBytesForProvider = Uint8List.fromList(pdfBytes);
+    ref.read(pdfBytesProvider.notifier).state = pdfBytesForProvider;
 
     // Set progress to complete
     await updateProgress(1.0);

@@ -97,15 +97,18 @@ class _CreationPageState extends ConsumerState<CreationPage>
 
       // Base storage path for all files related to this magazine
       final basePath = 'users/$userID/$dateFolder';
-
+      
       try {
         // 1. Upload PDF
+        ref.read(creationProgressProvider.notifier).state = 0.60;
         final pdfFileName = '$sanitizedTopic.pdf';
         final pdfRef =
             FirebaseStorage.instance.ref().child('$basePath/$pdfFileName');
 
+        // Create a fresh copy of the PDF data before uploading
+        final pdfDataCopy = Uint8List.fromList(pdfData);
         await pdfRef.putData(
-          pdfData,
+          pdfDataCopy,
           SettableMetadata(contentType: 'application/pdf'),
         );
         if (kDebugMode) {
@@ -113,6 +116,7 @@ class _CreationPageState extends ConsumerState<CreationPage>
         }
 
         // 2. Upload cover image if available
+        ref.read(creationProgressProvider.notifier).state = 0.70;
         if (magazineData['cover_image'] != null) {
           try {
             // Decode the cover image from base64
@@ -137,6 +141,7 @@ class _CreationPageState extends ConsumerState<CreationPage>
         }
 
         // 3. Upload first page image if available
+        ref.read(creationProgressProvider.notifier).state = 0.80;
         if (magazineData['first_page_image'] != null) {
           try {
             // Decode the first page image from base64
@@ -161,9 +166,10 @@ class _CreationPageState extends ConsumerState<CreationPage>
           }
         }
 
-        ref.read(creationProgressProvider.notifier).state = 0.95;
+
 
         // 4. Create a Firestore document to store metadata
+        ref.read(creationProgressProvider.notifier).state = 0.90;
         final magazineMetadata = {
           'theme': widget.topic,
           'language': language,

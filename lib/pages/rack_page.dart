@@ -186,7 +186,7 @@ class _RackPageState extends ConsumerState<RackPage> {
                           minHeight: 32,
                           minWidth: 72,
                         ),
-                        isSelected: [_showCoverImage, !_showCoverImage],
+                        isSelected: [!_showCoverImage, _showCoverImage],
                         onPressed: (index) {
                           setState(() {
                             _showCoverImage = index == 0;
