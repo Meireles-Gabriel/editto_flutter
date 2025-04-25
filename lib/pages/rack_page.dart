@@ -25,6 +25,7 @@ class RackPage extends ConsumerStatefulWidget {
 class _RackPageState extends ConsumerState<RackPage> {
   late Stream<QuerySnapshot> _magazinesStream;
   bool _showCoverImage = false; // Control whether to show cover or first page
+  // Controla se mostra capa ou primeira página
 
   @override
   void initState() {
@@ -43,6 +44,7 @@ class _RackPageState extends ConsumerState<RackPage> {
   }
 
   // Format date based on selected language
+  // Formata data com base na linguagem selecionada
   String _formatDate(DateTime date, String language) {
     if (language == 'pt') {
       return DateFormat('dd/MM/yyyy').format(date);
@@ -52,6 +54,7 @@ class _RackPageState extends ConsumerState<RackPage> {
   }
 
   // Load magazine PDF and open the PDF viewer
+  // Carrega o PDF da revista e abre o visualizador de PDF
   Future<void> _openMagazine(
       BuildContext context, Map<String, dynamic> magazineData) async {
     try {
@@ -95,8 +98,11 @@ class _RackPageState extends ConsumerState<RackPage> {
           );
         } catch (viewerError) {
           if (context.mounted) {
+            final texts = ref.watch(languageNotifierProvider)['texts'];
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Error displaying PDF: $viewerError')),
+              SnackBar(
+                  content: Text(
+                      '${texts['pdfViewer']?[1] ?? "Failed to load PDF"}: $viewerError')),
             );
           }
         }
@@ -113,14 +119,18 @@ class _RackPageState extends ConsumerState<RackPage> {
           // Dialog might not be showing
         }
 
+        final texts = ref.watch(languageNotifierProvider)['texts'];
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to load magazine: $e')),
+          SnackBar(
+              content: Text(
+                  '${texts['rack']?[1] ?? "Error loading your magazines."}: $e')),
         );
       }
     }
   }
 
   // Get the appropriate image path based on user preference
+  // Obtém o caminho de imagem apropriado com base na preferência do usuário
   String? _getImagePath(Map<String, dynamic> magazineData) {
     if (magazineData['folderPath'] == null) return null;
 
@@ -230,7 +240,7 @@ class _RackPageState extends ConsumerState<RackPage> {
                     final magazineDate = magazineData['date'] != null
                         ? DateTime.parse(magazineData['date'])
                         : DateTime.now();
-                    final theme = magazineData['theme'] ?? 'Unknown';
+                    final theme = magazineData['theme'] ?? texts['rack'][6];
                     final coverPath = _getImagePath(magazineData);
 
                     // Magazine card with cover and details

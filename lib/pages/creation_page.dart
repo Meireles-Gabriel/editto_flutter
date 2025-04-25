@@ -65,30 +65,47 @@ class _CreationPageState extends ConsumerState<CreationPage>
     super.dispose();
   }
 
+  /// Process for creating and uploading the magazine
+  /// Processo de criação e upload da revista
   Future<void> _creationProcess(language, theme, coins) async {
     try {
       // Create magazine
+      // Cria a revista
       await createMagazine(ref, language, theme, coins);
 
       // Check if we have PDF data
+      // Verifica se temos dados do PDF
       final pdfData = ref.read(pdfBytesProvider);
       if (pdfData == null) {
+        if (kDebugMode) {
+          print('PDF generation failed - pdfBytesProvider is null');
+        }
         throw Exception('PDF generation failed');
       }
 
+      if (kDebugMode) {
+        print('PDF data retrieved successfully, size: ${pdfData.length} bytes');
+      }
+
       // Get magazine data from the provider
+      // Obtém dados da revista do provedor
       final magazineData = ref.read(processDataProvider);
       if (magazineData == null) {
+        if (kDebugMode) {
+          print('Magazine data not available - processDataProvider is null');
+        }
         throw Exception('Magazine data not available');
       }
 
       // Upload PDF to Firebase Storage
+      // Faz upload do PDF para o Firebase Storage
       final userID = FirebaseAuth.instance.currentUser?.uid;
       if (userID == null) {
         throw Exception('User not authenticated');
       }
 
       // Create date-based folder structure for easy sorting
+      // Cria estrutura de pastas baseada em data para fácil organização
       final now = DateTime.now();
       final dateFolder =
           '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}_${now.hour.toString().padLeft(2, '0')}-${now.minute.toString().padLeft(2, '0')}-${now.second.toString().padLeft(2, '0')}';
@@ -96,16 +113,21 @@ class _CreationPageState extends ConsumerState<CreationPage>
           widget.topic.replaceAll(RegExp(r'[^\w\s]+'), '').replaceAll(' ', '_');
 
       // Base storage path for all files related to this magazine
+      // Caminho base de armazenamento para todos os arquivos relacionados a esta revista
       final basePath = 'users/$userID/$dateFolder';
-      
+
       try {
         // 1. Upload PDF
-        ref.read(creationProgressProvider.notifier).state = 0.60;
+        // 1. Faz upload do PDF
+        Future.microtask(() {
+          ref.read(creationProgressProvider.notifier).state = 0.60;
+        });
         final pdfFileName = '$sanitizedTopic.pdf';
         final pdfRef =
             FirebaseStorage.instance.ref().child('$basePath/$pdfFileName');
 
         // Create a fresh copy of the PDF data before uploading
+        // Cria uma cópia nova dos dados do PDF antes do upload
         final pdfDataCopy = Uint8List.fromList(pdfData);
         await pdfRef.putData(
           pdfDataCopy,
@@ -116,10 +138,14 @@ class _CreationPageState extends ConsumerState<CreationPage>
         }
 
         // 2. Upload cover image if available
-        ref.read(creationProgressProvider.notifier).state = 0.70;
+        // 2. Faz upload da imagem de capa se disponível
+        Future.microtask(() {
+          ref.read(creationProgressProvider.notifier).state = 0.70;
+        });
         if (magazineData['cover_image'] != null) {
           try {
             // Decode the cover image from base64
+            // Decodifica a imagem de capa do base64
             final coverImageBytes = base64Decode(magazineData['cover_image']);
             final imageFileName = '${sanitizedTopic}_cover.jpg';
             final imageRef = FirebaseStorage.instance
@@ -141,10 +167,14 @@ class _CreationPageState extends ConsumerState<CreationPage>
         }
 
         // 3. Upload first page image if available
-        ref.read(creationProgressProvider.notifier).state = 0.80;
+        // 3. Faz upload da imagem da primeira página se disponível
+        Future.microtask(() {
+          ref.read(creationProgressProvider.notifier).state = 0.80;
+        });
         if (magazineData['first_page_image'] != null) {
           try {
             // Decode the first page image from base64
+            // Decodifica a imagem da primeira página do base64
             final firstPageImageBytes =
                 base64Decode(magazineData['first_page_image']);
             final firstPageFileName = '${sanitizedTopic}_first_page.jpg';
@@ -166,10 +196,11 @@ class _CreationPageState extends ConsumerState<CreationPage>
           }
         }
 
-
-
         // 4. Create a Firestore document to store metadata
-        ref.read(creationProgressProvider.notifier).state = 0.90;
+        // 4. Cria um documento no Firestore para armazenar metadados
+        Future.microtask(() {
+          ref.read(creationProgressProvider.notifier).state = 0.90;
+        });
         final magazineMetadata = {
           'theme': widget.topic,
           'language': language,
@@ -183,6 +214,7 @@ class _CreationPageState extends ConsumerState<CreationPage>
         };
 
         // Save to Firestore with document ID matching the folder name
+        // Salva no Firestore com ID do documento igual ao nome da pasta
         await FirebaseFirestore.instance
             .collection('Users')
             .doc(userID)
@@ -190,17 +222,38 @@ class _CreationPageState extends ConsumerState<CreationPage>
             .doc(dateFolder)
             .set(magazineMetadata);
 
+        // Debit coins from user account
+        // Debita as moedas da conta do usuário
+        final userRef =
+            FirebaseFirestore.instance.collection('Users').doc(userID);
+        await FirebaseFirestore.instance.runTransaction((transaction) async {
+          final userDoc = await transaction.get(userRef);
+          if (!userDoc.exists) {
+            throw Exception('User document does not exist');
+          }
+
+          final currentCoins = userDoc.data()?['coins'] ?? 0;
+          if (currentCoins < coins) {
+            throw Exception('Insufficient coins');
+          }
+
+          transaction.update(userRef, {'coins': currentCoins - coins});
+        });
+
         if (kDebugMode) {
-          print('Magazine metadata saved to Firestore');
+          print(
+              'Magazine metadata saved to Firestore and $coins coins debited from user account');
         }
       } catch (uploadError) {
         if (kDebugMode) {
           print('Error uploading files: $uploadError');
         }
         // Continue to PDF viewer even if upload fails
+        // Continua para o visualizador de PDF mesmo se o upload falhar
       }
 
       // If creation is successful and not currently disposed, navigate to PDF viewer
+      // Se a criação for bem-sucedida e não estiver atualmente descartado, navega para o visualizador de PDF
       if (mounted) {
         await Navigator.of(context).push(
           MaterialPageRoute(
@@ -211,13 +264,15 @@ class _CreationPageState extends ConsumerState<CreationPage>
           ),
         );
 
-        // Return to previous screen after viewer is closed
+        // Return to NewsstandPage after viewer is closed (replace instead of pop)
+        // Retorna à tela anterior após o visualizador ser fechado
         if (mounted) {
-          Navigator.of(context).pop();
+          Navigator.of(context).pop(); // Pop the CreationPage
         }
       }
     } catch (e) {
       // If an error occurs and not currently disposed, navigate to error page
+      // Se ocorrer um erro e não estiver atualmente descartado, navega para a página de erro
       if (mounted) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
@@ -257,7 +312,6 @@ class _CreationPageState extends ConsumerState<CreationPage>
             // Topic title
             // Título do tópico
             Text(
-              //widget.topic,
               widget.topic,
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.bold,
@@ -305,13 +359,20 @@ class _CreationPageState extends ConsumerState<CreationPage>
                   children: [
                     Text(
                       texts['creation']?[0] ?? 'Creating your magazine',
-                      // "Creating your magazine" / "Criando sua revista"
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     _buildAnimatedDots(),
                   ],
                 );
               },
+            ),
+            const SizedBox(height: 16),
+            Text(
+              texts['creation']?[4] ?? 'Creation Progress',
+              style: TextStyle(
+                fontSize: 14,
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+              ),
             ),
           ],
         ),
@@ -322,6 +383,7 @@ class _CreationPageState extends ConsumerState<CreationPage>
   // Build animated dots for loading indicator
   // Constrói pontos animados para indicador de carregamento
   Widget _buildAnimatedDots() {
+    final texts = ref.watch(languageNotifierProvider)['texts'];
     return SizedBox(
       width: 40,
       child: Row(
@@ -332,9 +394,9 @@ class _CreationPageState extends ConsumerState<CreationPage>
           final opacityValue = (sinValue + 1) / 2; // Transform to 0.0-1.0 range
           return Opacity(
             opacity: opacityValue,
-            child: const Text(
-              '.',
-              style: TextStyle(
+            child: Text(
+              texts['creation']?[5] ?? '.',
+              style: const TextStyle(
                 fontSize: 30,
                 fontWeight: FontWeight.bold,
               ),
@@ -360,7 +422,6 @@ class _CreationPageState extends ConsumerState<CreationPage>
         title: Text(ref.watch(languageNotifierProvider)['texts']['creation']
                 ?[1] ??
             'Magazine Creation'),
-        // "Magazine Creation" / "Criação de Revista"
       ),
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(

@@ -6,16 +6,16 @@ import 'dart:async';
 
 // Base URL for API calls
 // URL base para chamadas de API
-const bool useLocalServer = true; // Set to false for production
-const String localApiBaseUrl = 'http://192.168.1.6:8080';
+const bool useLocalServer = false; // Set to false for production
+const String localApiBaseUrl = 'http://192.168.15.183:8080';
 const String productionApiBaseUrl =
     'https://editto-backend-572616648599.us-central1.run.app';
 const String apiBaseUrl =
     useLocalServer ? localApiBaseUrl : productionApiBaseUrl;
 
-// Create a persistent HTTP client with custom configuration
-// Cria um cliente HTTP persistente com configuração personalizada
-final httpClient = http.Client();
+// Create timeout durations
+// Cria durações de timeout
+const Duration defaultTimeout = Duration(seconds: 120);
 
 // Provider for tracking magazine creation progress
 // Provedor para acompanhar o progresso da criação da revista
@@ -57,7 +57,7 @@ Future<Map<String, dynamic>> fetchArticles(
       .post(Uri.parse('$apiBaseUrl/fetch-articles-endpoint'),
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({'process_data': processData}))
-      .timeout(const Duration(seconds: 120));
+      .timeout(defaultTimeout);
 
   if (response.statusCode == 200) {
     final responseData = jsonDecode(response.body);
@@ -77,7 +77,7 @@ Future<Map<String, dynamic>> rewriteArticles(
       .post(Uri.parse('$apiBaseUrl/rewrite-articles-endpoint'),
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({'process_data': processData}))
-      .timeout(const Duration(seconds: 120));
+      .timeout(defaultTimeout);
 
   if (response.statusCode == 200) {
     final responseData = jsonDecode(response.body);
@@ -97,7 +97,7 @@ Future<Map<String, dynamic>> generateCoverText(
       .post(Uri.parse('$apiBaseUrl/generate-cover-text-endpoint'),
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({'process_data': processData}))
-      .timeout(const Duration(seconds: 120));
+      .timeout(defaultTimeout);
 
   if (response.statusCode == 200) {
     final responseData = jsonDecode(response.body);
@@ -114,7 +114,7 @@ Future<Map<String, dynamic>> generateImage(
   try {
     // Call generate_image with the processData from generateCoverText
     // Chama generate_image com os dados do processo de generateCoverText
-    final response = await httpClient
+    final response = await http
         .post(
           Uri.parse('$apiBaseUrl/generate-image-endpoint'),
           headers: {
@@ -124,8 +124,7 @@ Future<Map<String, dynamic>> generateImage(
           },
           body: jsonEncode({'process_data': processData}),
         )
-        .timeout(
-            const Duration(seconds: 120)); // Increased timeout to 120 seconds
+        .timeout(defaultTimeout); // Increased timeout to 120 seconds
 
     if (response.statusCode == 200) {
       final responseData = jsonDecode(response.body);
@@ -152,7 +151,7 @@ Future<Map<String, dynamic>> finalizeMagazineRawData(
       .post(Uri.parse('$apiBaseUrl/finalize-magazine-raw-data-endpoint'),
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({'process_data': processData}))
-      .timeout(const Duration(seconds: 120));
+      .timeout(defaultTimeout);
 
   if (response.statusCode == 200) {
     final responseData = jsonDecode(response.body);
@@ -188,7 +187,9 @@ Future<Map<String, dynamic>> rawMagazineDataFlow(
   try {
     // Set progress to 0%
     // Define progresso para 0%
-    ref.read(creationProgressProvider.notifier).state = 0.0;
+    await _safeUpdateState(() {
+      ref.read(creationProgressProvider.notifier).state = 0.0;
+    });
 
     while (currentStep <= 5) {
       try {
@@ -199,21 +200,29 @@ Future<Map<String, dynamic>> rawMagazineDataFlow(
             print("Starting step 1: Initialize magazine process");
           }
           final initData = await initMagazineProcess(language, theme, coins);
-          ref.read(processDataProvider.notifier).state =
-              initData['process_data'];
-          ref.read(creationProgressProvider.notifier).state = 0.10;
+          await _safeUpdateState(() {
+            ref.read(processDataProvider.notifier).state =
+                initData['process_data'];
+            ref.read(creationProgressProvider.notifier).state = 0.10;
+          });
           currentStep++;
         } else if (currentStep == 1) {
           // Step 2: Fetch news articles
           // Passo 2: Busca artigos de notícias
           if (kDebugMode) {
             print("Starting step 2: Fetch news articles");
+            
           }
-          final articlesData =
-              await fetchArticles(ref.read(processDataProvider)!);
-          ref.read(processDataProvider.notifier).state =
-              articlesData['process_data'];
-          ref.read(creationProgressProvider.notifier).state = 0.20;
+          final processData = ref.read(processDataProvider);
+          if (processData == null) {
+            throw Exception('Process data is null before fetchArticles');
+          }
+          final articlesData = await fetchArticles(processData);
+          await _safeUpdateState(() {
+            ref.read(processDataProvider.notifier).state =
+                articlesData['process_data'];
+            ref.read(creationProgressProvider.notifier).state = 0.20;
+          });
           currentStep++;
         } else if (currentStep == 2) {
           // Step 3: Rewrite articles for magazine style
@@ -221,11 +230,16 @@ Future<Map<String, dynamic>> rawMagazineDataFlow(
           if (kDebugMode) {
             print("Starting step 3: Rewrite articles");
           }
-          final rewrittenData =
-              await rewriteArticles(ref.read(processDataProvider)!);
-          ref.read(processDataProvider.notifier).state =
-              rewrittenData['process_data'];
-          ref.read(creationProgressProvider.notifier).state = 0.30;
+          final processData = ref.read(processDataProvider);
+          if (processData == null) {
+            throw Exception('Process data is null before rewriteArticles');
+          }
+          final rewrittenData = await rewriteArticles(processData);
+          await _safeUpdateState(() {
+            ref.read(processDataProvider.notifier).state =
+                rewrittenData['process_data'];
+            ref.read(creationProgressProvider.notifier).state = 0.30;
+          });
           currentStep++;
         } else if (currentStep == 3) {
           // Step 4: Generate cover text
@@ -233,11 +247,16 @@ Future<Map<String, dynamic>> rawMagazineDataFlow(
           if (kDebugMode) {
             print("Starting step 4: Generate cover text");
           }
-          final coverTextData =
-              await generateCoverText(ref.read(processDataProvider)!);
-          ref.read(processDataProvider.notifier).state =
-              coverTextData['process_data'];
-          ref.read(creationProgressProvider.notifier).state = 0.40;
+          final processData = ref.read(processDataProvider);
+          if (processData == null) {
+            throw Exception('Process data is null before generateCoverText');
+          }
+          final coverTextData = await generateCoverText(processData);
+          await _safeUpdateState(() {
+            ref.read(processDataProvider.notifier).state =
+                coverTextData['process_data'];
+            ref.read(creationProgressProvider.notifier).state = 0.40;
+          });
           currentStep++;
         } else if (currentStep == 4) {
           // Step 5: Generate cover image
@@ -245,10 +264,16 @@ Future<Map<String, dynamic>> rawMagazineDataFlow(
           if (kDebugMode) {
             print("Starting step 5: Generate cover image");
           }
-          final imageData = await generateImage(ref.read(processDataProvider)!);
-          ref.read(processDataProvider.notifier).state =
-              imageData['process_data'];
-          ref.read(creationProgressProvider.notifier).state = 0.50;
+          final processData = ref.read(processDataProvider);
+          if (processData == null) {
+            throw Exception('Process data is null before generateImage');
+          }
+          final imageData = await generateImage(processData);
+          await _safeUpdateState(() {
+            ref.read(processDataProvider.notifier).state =
+                imageData['process_data'];
+            ref.read(creationProgressProvider.notifier).state = 0.50;
+          });
           currentStep++;
         } else if (currentStep == 5) {
           // Step 6: Finalize magazine and get raw data
@@ -256,8 +281,21 @@ Future<Map<String, dynamic>> rawMagazineDataFlow(
           if (kDebugMode) {
             print("Starting step 6: Finalize magazine");
           }
-          final finalData =
-              await finalizeMagazineRawData(ref.read(processDataProvider)!);
+          final processData = ref.read(processDataProvider);
+          if (processData == null) {
+            throw Exception(
+                'Process data is null before finalizeMagazineRawData');
+          }
+
+          // Check if required components exist
+          if (processData['cover_content'] == null) {
+            if (kDebugMode) {
+              print("Missing cover_content in process data: $processData");
+            }
+            throw Exception('Missing required components: cover_content');
+          }
+
+          final finalData = await finalizeMagazineRawData(processData);
 
           // Store the final magazine data
           // Armazena os dados finais da revista
@@ -300,8 +338,10 @@ Future<Map<String, dynamic>> rawMagazineDataFlow(
 
           // Adjust progress indicator to show we're redoing a step
           // Ajusta o indicador de progresso para mostrar que estamos refazendo um passo
-          ref.read(creationProgressProvider.notifier).state =
-              [0.0, 0.10, 0.20, 0.30, 0.40, 0.50][currentStep];
+          await _safeUpdateState(() {
+            ref.read(creationProgressProvider.notifier).state =
+                [0.0, 0.10, 0.20, 0.30, 0.40, 0.50][currentStep];
+          });
         } else {
           // Can't go back from step 0
           // Não é possível voltar do passo 0
@@ -322,8 +362,24 @@ Future<Map<String, dynamic>> rawMagazineDataFlow(
     if (kDebugMode) {
       print('Error creating magazine: $e');
     }
-    // Clean up the HTTP client
-    httpClient.close();
+    // No more httpClient.close() needed since we're using one-off clients
     rethrow;
   }
+}
+
+// Helper function to safely update state and wait for completion
+// Função auxiliar para atualizar o estado com segurança e aguardar a conclusão
+Future<void> _safeUpdateState(Function() updateFn) async {
+  final completer = Completer<void>();
+
+  Future.microtask(() {
+    try {
+      updateFn();
+      completer.complete();
+    } catch (e) {
+      completer.completeError(e);
+    }
+  });
+
+  return completer.future;
 }

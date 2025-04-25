@@ -46,7 +46,7 @@ class _IntroPageState extends ConsumerState<IntroPage> {
                   ),
             const SizedBox(height: 24),
             Text(
-              'Éditto', // texts['intro'][0] - "Éditto" / "Éditto"
+              texts['intro'][0], // "Éditto" / "Éditto"
               style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: Theme.of(context).colorScheme.primary,

@@ -76,6 +76,18 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             email: _emailController.text.trim(),
             password: _passwordController.text.trim(),
           );
+
+          // Update last login time
+          // Atualiza hora do último login
+          final user = FirebaseAuth.instance.currentUser;
+          if (user != null) {
+            await FirebaseFirestore.instance
+                .collection('Users')
+                .doc(user.uid)
+                .update({
+              'lastLoginTime': FieldValue.serverTimestamp(),
+            });
+          }
         } else {
           // Sign up with Firebase
           // Cadastro com Firebase
@@ -101,6 +113,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             'email': _emailController.text.trim(),
             'id': userCredential.user!.uid,
             'coins': 1,
+            // Add payment verification fields
+            // Adiciona campos para verificação de pagamento
+            'pendingPayment': false,
+            'pendingCoins': 0,
+            'pendingPaymentTime': null,
+            'lastLoginTime': FieldValue.serverTimestamp(),
+            'createdAt': FieldValue.serverTimestamp(),
           });
         }
 
@@ -172,7 +191,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           Column(
             children: [
               Text(
-                'Éditto',
+                texts['intro']?[0] ?? 'Éditto',
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: Theme.of(context).colorScheme.primary,
@@ -327,6 +346,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   builder: (context) {
                     final emailController = TextEditingController();
 
+                    // Handle password reset with Firebase Auth
+                    // Lidar com redefinição de senha com Firebase Auth
                     Future<void> handleResetPassword() async {
                       try {
                         await FirebaseAuth.instance.sendPasswordResetEmail(
@@ -346,6 +367,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       }
                     }
 
+                    // Password reset dialog
+                    // Diálogo de redefinição de senha
                     return AlertDialog(
                       backgroundColor: Theme.of(context).colorScheme.surface,
                       title: Text(texts['login']![
@@ -388,6 +411,113 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               ),
             ),
           ],
+
+          // Terms of Use and Privacy Policy button
+          // Botão para Termos de Uso e Política de Privacidade
+          const SizedBox(height: 16),
+          TextButton(
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) {
+                  return AlertDialog(
+                    backgroundColor: Theme.of(context).colorScheme.surface,
+                    title: Text(texts['login']?[17] ??
+                        'Terms of Use and Privacy Policy'), // "Terms of Use and Privacy Policy" / "Termos de Uso e Política de Privacidade"
+                    content: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            texts['login']?[19] ??
+                                'By using Éditto, you agree to the following terms:', // "By using Éditto, you agree to the following terms:" / "Ao usar o Éditto, você concorda com os seguintes termos:"
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 16),
+
+                          // AI Magazine Generation
+                          Text(
+                            texts['login']?[20] ??
+                                '1. AI-Generated Content', // "1. AI-Generated Content" / "1. Conteúdo Gerado por IA"
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            texts['login']?[21] ??
+                                'Éditto uses artificial intelligence to create magazine PDFs. The content is generated based on your chosen theme and may contain inaccuracies or errors. The sources of information are listed at the bottom of each magazine.', // "Éditto uses artificial intelligence..." / "O Éditto usa inteligência artificial..."
+                          ),
+                          const SizedBox(height: 12),
+
+                          // AI Cover Generation
+                          Text(
+                            texts['login']?[22] ??
+                                '2. Magazine Covers', // "2. Magazine Covers" / "2. Capas de Revistas"
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            texts['login']?[23] ??
+                                'Magazine covers are AI-generated and while they attempt to relate to the theme you provide, they may sometimes appear random or not fully aligned with the content.', // "Magazine covers are AI-generated..." / "As capas das revistas são geradas por IA..."
+                          ),
+                          const SizedBox(height: 12),
+
+                          // Content Sources and Accuracy
+                          Text(
+                            texts['login']?[24] ??
+                                '3. Content Accuracy', // "3. Content Accuracy" / "3. Precisão do Conteúdo"
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            texts['login']?[25] ??
+                                'The magazine content is based on articles found about your chosen theme but is rewritten by AI. This process may introduce errors or inaccuracies. Source articles are always cited at the bottom of each magazine.', // "The magazine content is based..." / "O conteúdo da revista é baseado..."
+                          ),
+                          const SizedBox(height: 12),
+
+                          // Payment and Coins
+                          Text(
+                            texts['login']?[26] ??
+                                '4. Payments and Refunds', // "4. Payments and Refunds" / "4. Pagamentos e Reembolsos"
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            texts['login']?[27] ??
+                                'Users can purchase coins to generate magazines. These purchases are final and non-refundable. By making a purchase, you acknowledge and accept this no-refund policy.', // "Users can purchase coins..." / "Os usuários podem comprar moedas..."
+                          ),
+                          const SizedBox(height: 12),
+
+                          // Agreement
+                          Text(
+                            texts['login']?[28] ??
+                                '5. User Agreement', // "5. User Agreement" / "5. Acordo do Usuário"
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            texts['login']?[29] ??
+                                'By using this application, you agree to these terms of use and privacy policies. If you do not agree with these terms, please discontinue use of the application.', // "By using this application, you agree..." / "Ao usar este aplicativo, você concorda..."
+                          ),
+                        ],
+                      ),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: Text(texts['login']?[18] ??
+                            'Close'), // "Close" / "Fechar"
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+            child: Text(
+              texts['login']?[17] ??
+                  'Terms of Use and Privacy Policy', // "Terms of Use and Privacy Policy" / "Termos de Uso e Política de Privacidade"
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.secondary,
+                fontSize: 12,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
         ],
       ),
     );
@@ -395,10 +525,14 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Get localized texts and screen dimensions
+    // Obtém textos localizados e dimensões da tela
     final texts = ref.watch(languageNotifierProvider)['texts'];
     final size = MediaQuery.of(context).size;
     final paddingWidth = size.width * 0.1;
 
+    // Build responsive UI based on device size
+    // Constrói UI responsiva com base no tamanho do dispositivo
     return Scaffold(
       appBar: AppBar(
         title: Text(texts['login']![16]), // "Login/Signup" / "Login/Cadastro"

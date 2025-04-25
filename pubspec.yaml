@@ -17,9 +17,7 @@ dependencies:
   firebase_core: 
   cloud_firestore: 
   firebase_auth: 
-  firebase_storage: 
-  flutter_stripe: 11.4.0
-  flutter_stripe_web: 
+  firebase_storage:
   cached_network_image: 
   printing: 
   pdf: 
@@ -29,6 +27,7 @@ dependencies:
   flutter_native_splash: 
   intl: ^0.20.2
   path_provider: ^2.1.5
+  url_launcher: ^6.3.1
   
 
 flutter_native_splash:

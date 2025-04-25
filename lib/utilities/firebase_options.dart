@@ -7,6 +7,9 @@
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
+import 'package:flutter/material.dart' show BuildContext;
+import 'package:editto_flutter/utilities/language_notifier.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Default [FirebaseOptions] for use with your Firebase apps.
 /// Opções padrão do [FirebaseOptions] para uso com seus apps Firebase.
@@ -52,6 +55,23 @@ class DefaultFirebaseOptions {
         );
     }
   }
+
+  // Get localized error message for unsupported platforms
+  // Obtém mensagem de erro localizada para plataformas não suportadas
+  static String getErrorMessage(
+      BuildContext context, WidgetRef ref, int index) {
+    final texts = ref.read(languageNotifierProvider)['texts'];
+    return texts['firebase']?[index] ?? firebaseEN[index];
+  }
+
+  // Default English error messages if localization fails
+  // Mensagens de erro em inglês padrão se a localização falhar
+  static const List<String> firebaseEN = [
+    'Firebase options not configured for iOS - you can reconfigure by running the FlutterFire CLI again.',
+    'Firebase options not configured for macOS - you can reconfigure by running the FlutterFire CLI again.',
+    'Firebase options not configured for Linux - you can reconfigure by running the FlutterFire CLI again.',
+    'Firebase options not supported for this platform.',
+  ];
 
   // Firebase configuration for web platform
   // Configuração do Firebase para plataforma web
