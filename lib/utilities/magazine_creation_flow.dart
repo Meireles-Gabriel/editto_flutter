@@ -371,7 +371,7 @@ Future<Uint8List> createMagazinePDF(Map<String, dynamic> magazineData) async {
                               textAlign: pw.TextAlign.center,
                               style: pw.TextStyle(
                                 font: fontCoverTitle,
-                                fontSize: mainHeadline.length <= 10 ? 68 : 54,
+                                fontSize: mainHeadline.length <= 9 ? 68 : 54,
                                 fontWeight: pw.FontWeight.bold,
                                 color: PdfColors.black,
                               ),

@@ -193,6 +193,17 @@ List<String> creationPT = [
   'Tentar novamente', //3
   'Progresso da criação', //4
   '.', //5 - Loading dot character
+  'Nossa equipe editorial está buscando ideias sobre seu tema...', //6 - 0% progress
+  'Nossos jornalistas estão entrevistando especialistas no assunto...', //7 - 10% progress
+  'Nossos redatores estão elaborando o primeiro rascunho dos artigos...', //8 - 20% progress
+  'O editor-chefe está revisando o conteúdo para garantir qualidade...', //9 - 30% progress
+  'Nossa equipe de design está criando o layout da capa...', //10 - 40% progress
+  'Nossos fotógrafos estão capturando a imagem perfeita para a capa...', //11 - 50% progress
+  'Os diagramadores estão organizando o layout interno da revista...', //12 - 60% progress
+  'Nossa equipe está finalizando os gráficos e imagens...', //13 - 70% progress
+  'Estamos imprimindo as primeiras cópias da sua revista...', //14 - 80% progress
+  'O controle de qualidade está verificando o produto final...', //15 - 90% progress
+  'Sua revista acabou de sair da gráfica!', //16 - 100% progress
 ];
 
 // Creation page texts in English
@@ -204,6 +215,17 @@ List<String> creationEN = [
   'Try Again', //3
   'Creation Progress', //4
   '.', //5 - Loading dot character
+  'Our editorial team is brainstorming ideas about your theme...', //6 - 0% progress
+  'Our journalists are interviewing subject matter experts...', //7 - 10% progress
+  'Our writers are drafting the first version of the articles...', //8 - 20% progress
+  'The editor-in-chief is reviewing content for quality...', //9 - 30% progress
+  'Our design team is creating the cover layout...', //10 - 40% progress
+  'Our photographers are capturing the perfect cover image...', //11 - 50% progress
+  'The layout artists are arranging the magazine\'s interior...', //12 - 60% progress
+  'Our team is finalizing all graphics and images...', //13 - 70% progress
+  'We\'re printing the first copies of your magazine...', //14 - 80% progress
+  'Quality control is checking the final product...', //15 - 90% progress
+  'Your magazine has just come off the press!', //16 - 100% progress
 ];
 
 // Error page texts in Portuguese

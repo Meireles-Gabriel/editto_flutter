@@ -1,6 +1,5 @@
 // Required imports for creation page functionality
 // Importações necessárias para funcionalidade da página de criação
-import 'dart:math';
 import 'dart:convert';
 import 'package:editto_flutter/pages/error_page.dart';
 import 'package:editto_flutter/pages/pdf_viewer_page.dart';
@@ -14,6 +13,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:lottie/lottie.dart';
+import 'package:animate_do/animate_do.dart';
 
 // Provider for tracking magazine creation progress
 // Provedor para acompanhar o progresso da criação da revista
@@ -38,9 +39,14 @@ class CreationPage extends ConsumerStatefulWidget {
 
 class _CreationPageState extends ConsumerState<CreationPage>
     with SingleTickerProviderStateMixin {
-  // Animation controller for progress indicators
-  // Controlador de animação para indicadores de progresso
+  // Animation controller for animations
+  // Controlador de animação para animações
   late AnimationController _animationController;
+
+  // Current description based on progress
+  // Descrição atual baseada no progresso
+  String _currentDescription = '';
+  double _lastProgress = 0.0;
 
   @override
   void initState() {
@@ -49,6 +55,12 @@ class _CreationPageState extends ConsumerState<CreationPage>
       vsync: this,
       duration: const Duration(seconds: 2),
     )..repeat();
+
+    // Initialize with the first description text
+    // Inicializa com o primeiro texto de descrição
+    final texts = ref.read(languageNotifierProvider)['texts'];
+    _currentDescription =
+        texts['creation'][6]; // Show first description (0% progress)
 
     // Start magazine creation process
     // Inicia o processo de criação da revista
@@ -297,11 +309,36 @@ class _CreationPageState extends ConsumerState<CreationPage>
     }
   }
 
+  // Get description text based on progress
+  // Obtém texto de descrição baseado no progresso
+  String _getDescriptionText(double progress, List<String> texts) {
+    if (progress == 0.0 || progress < 0.05)
+      return texts[6]; // At 0% show editorial team brainstorming
+    if (progress < 0.15) return texts[7]; // Journalists interviewing experts
+    if (progress < 0.25) return texts[8]; // Writers drafting articles
+    if (progress < 0.35) return texts[9]; // Editor reviewing content
+    if (progress < 0.45) return texts[10]; // Design team creating cover layout
+    if (progress < 0.55)
+      return texts[11]; // Photographers capturing cover image
+    if (progress < 0.65) return texts[12]; // Layout artists arranging interior
+    if (progress < 0.75) return texts[13]; // Finalizing graphics and images
+    if (progress < 0.85) return texts[14]; // Printing copies
+    if (progress < 0.95) return texts[15]; // Quality control checking
+    return texts[16]; // Final product is ready
+  }
+
   // Build main content with loading indicators
   // Constrói conteúdo principal com indicadores de carregamento
   Widget buildContent(BuildContext context) {
     final texts = ref.watch(languageNotifierProvider)['texts'];
     final progress = ref.watch(creationProgressProvider);
+
+    // Check if progress has changed enough to update description
+    // Verifica se o progresso mudou o suficiente para atualizar a descrição
+    if ((progress - _lastProgress).abs() >= 0.05) {
+      _lastProgress = progress;
+      _currentDescription = _getDescriptionText(progress, texts['creation']);
+    }
 
     return Center(
       child: Padding(
@@ -321,88 +358,68 @@ class _CreationPageState extends ConsumerState<CreationPage>
             ),
             const SizedBox(height: 48),
 
-            // Circular progress indicator
-            // Indicador de progresso circular
-            Stack(
-              alignment: Alignment.center,
-              children: [
-                SizedBox(
-                  width: 120,
-                  height: 120,
-                  child: CircularProgressIndicator(
-                    value: progress,
-                    strokeWidth: 8,
-                    backgroundColor:
-                        Theme.of(context).colorScheme.surfaceContainerHighest,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      Theme.of(context).colorScheme.primary,
+            // Magazine creation animation
+            // Animação de criação de revista
+            SizedBox(
+              height: 200,
+              width: 200,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Custom circular progress indicator
+                  // Indicador de progresso circular personalizado
+                  SizedBox(
+                    height: 150,
+                    width: 150,
+                    child: CircularProgressIndicator(
+                      value: progress,
+                      strokeWidth: 5,
+                      backgroundColor:
+                          Theme.of(context).colorScheme.surfaceContainerHighest,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        Theme.of(context).colorScheme.primary,
+                      ),
                     ),
                   ),
-                ),
-                Text(
-                  '${(progress * 100).toInt()}%',
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                ),
-              ],
+                  // White background circle for the animation
+                  // Círculo de fundo branco para a animação
+                  Container(
+                    width: 130,
+                    height: 130,
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  // Magazine loading animation
+                  // Animação de carregamento da revista
+                  Lottie.asset(
+                    'assets/lottie/magazine_loading.json',
+                    width: 120,
+                    height: 120,
+                    fit: BoxFit.contain,
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 48),
 
-            // Animated dots to show activity
-            // Pontos animados para mostrar atividade
-            AnimatedBuilder(
-              animation: _animationController,
-              builder: (context, child) {
-                return Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      texts['creation']?[0] ?? 'Creating your magazine',
-                      style: Theme.of(context).textTheme.titleLarge,
+            // Description text that changes with progress
+            // Texto de descrição que muda com o progresso
+            FadeIn(
+              key: ValueKey(_currentDescription),
+              duration: const Duration(milliseconds: 500),
+              child: Text(
+                _currentDescription,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      color: Theme.of(context).colorScheme.primary,
+                      fontWeight: FontWeight.w500,
                     ),
-                    _buildAnimatedDots(),
-                  ],
-                );
-              },
-            ),
-            const SizedBox(height: 16),
-            Text(
-              texts['creation']?[4] ?? 'Creation Progress',
-              style: TextStyle(
-                fontSize: 14,
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
               ),
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  // Build animated dots for loading indicator
-  // Constrói pontos animados para indicador de carregamento
-  Widget _buildAnimatedDots() {
-    final texts = ref.watch(languageNotifierProvider)['texts'];
-    return SizedBox(
-      width: 40,
-      child: Row(
-        children: List.generate(3, (index) {
-          final delay = index * 0.2;
-          final sinValue =
-              sin((_animationController.value * 2 * 3.14159) + delay);
-          final opacityValue = (sinValue + 1) / 2; // Transform to 0.0-1.0 range
-          return Opacity(
-            opacity: opacityValue,
-            child: Text(
-              texts['creation']?[5] ?? '.',
-              style: const TextStyle(
-                fontSize: 30,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          );
-        }),
       ),
     );
   }
