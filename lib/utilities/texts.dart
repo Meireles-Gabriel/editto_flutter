@@ -233,8 +233,9 @@ List<String> creationEN = [
 List<String> errorPT = [
   'Erro', //0
   'Algo deu errado', //1
-  'Ocorreu um erro inesperado', //2
+  'Algo inesperado aconteceu. Por favor, tente novamente.', //2
   'Voltar', //3
+  'Tentar novamente', //4
 ];
 
 // Error page texts in English
@@ -242,8 +243,9 @@ List<String> errorPT = [
 List<String> errorEN = [
   'Error', //0
   'Something went wrong', //1
-  'An unexpected error occurred', //2
+  'Something unexpected happened. Please, try again.', //2
   'Go Back', //3
+  'Try Again', //4
 ];
 
 // PDF Viewer page texts in Portuguese
