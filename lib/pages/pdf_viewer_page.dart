@@ -110,7 +110,8 @@ class _PdfViewerPageState extends ConsumerState<PdfViewerPage> {
 
     return Scaffold(
       appBar: AppBar(
-        surfaceTintColor: Theme.of(context).colorScheme.secondary,
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        scrolledUnderElevation: 0,
         title: Text(widget.title),
       ),
       backgroundColor: Theme.of(context).colorScheme.surface,

@@ -81,191 +81,156 @@ class _CreationPageState extends ConsumerState<CreationPage>
   /// Processo de criação e upload da revista
   Future<void> _creationProcess(language, theme, coins) async {
     try {
-      // Create magazine
-      // Cria a revista
-      await createMagazine(ref, language, theme, coins);
+      // Start magazine creation in background
+      // Inicia a criação da revista em segundo plano
+      await Future.microtask(() async {
+        ref.read(creationProgressProvider.notifier).state = 0.05;
+        await createMagazine(ref, language, theme, coins);
+      });
 
-      // Check if we have PDF data
-      // Verifica se temos dados do PDF
-      final pdfData = ref.read(pdfBytesProvider);
+      // Check PDF data in background
+      // Verifica os dados do PDF em segundo plano
+      final pdfData = await Future.microtask(() {
+        ref.read(creationProgressProvider.notifier).state = 0.50;
+        return ref.read(pdfBytesProvider);
+      });
+
       if (pdfData == null) {
-        if (kDebugMode) {
-          print('PDF generation failed - pdfBytesProvider is null');
-        }
         throw Exception('PDF generation failed');
       }
 
-      if (kDebugMode) {
-        print('PDF data retrieved successfully, size: ${pdfData.length} bytes');
-      }
+      // Get magazine data in background
+      // Obtém os dados da revista em segundo plano
+      final magazineData = await Future.microtask(() {
+        ref.read(creationProgressProvider.notifier).state = 0.55;
+        return ref.read(processDataProvider);
+      });
 
-      // Get magazine data from the provider
-      // Obtém dados da revista do provedor
-      final magazineData = ref.read(processDataProvider);
       if (magazineData == null) {
-        if (kDebugMode) {
-          print('Magazine data not available - processDataProvider is null');
-        }
         throw Exception('Magazine data not available');
       }
 
-      // Upload PDF to Firebase Storage
-      // Faz upload do PDF para o Firebase Storage
       final userID = FirebaseAuth.instance.currentUser?.uid;
       if (userID == null) {
         throw Exception('User not authenticated');
       }
 
-      // Create date-based folder structure for easy sorting
-      // Cria estrutura de pastas baseada em data para fácil organização
       final now = DateTime.now();
       final dateFolder =
           '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}_${now.hour.toString().padLeft(2, '0')}-${now.minute.toString().padLeft(2, '0')}-${now.second.toString().padLeft(2, '0')}';
+
+      // Sanitize topic name for file system compatibility
+      // Sanitiza o nome do tópico para compatibilidade com o sistema de arquivos
       final sanitizedTopic =
           widget.topic.replaceAll(RegExp(r'[^\w\s]+'), '').replaceAll(' ', '_');
 
-      // Base storage path for all files related to this magazine
-      // Caminho base de armazenamento para todos os arquivos relacionados a esta revista
+      // Create base path for storing all magazine files
+      // Cria caminho base para armazenar todos os arquivos da revista
       final basePath = 'users/$userID/$dateFolder';
 
-      try {
-        // 1. Upload PDF
-        // 1. Faz upload do PDF
-        Future.microtask(() {
+      // Upload all files in parallel for better performance
+      // Faz upload de todos os arquivos em paralelo para melhor desempenho
+      await Future.wait([
+        // Upload PDF file to Firebase Storage
+        // Faz upload do arquivo PDF para o Firebase Storage
+        Future(() async {
           ref.read(creationProgressProvider.notifier).state = 0.60;
-        });
-        final pdfFileName = '$sanitizedTopic.pdf';
-        final pdfRef =
-            FirebaseStorage.instance.ref().child('$basePath/$pdfFileName');
+          final pdfFileName = '$sanitizedTopic.pdf';
+          final pdfRef =
+              FirebaseStorage.instance.ref().child('$basePath/$pdfFileName');
 
-        // Create a fresh copy of the PDF data before uploading
-        // Cria uma cópia nova dos dados do PDF antes do upload
-        final pdfDataCopy = Uint8List.fromList(pdfData);
-        await pdfRef.putData(
-          pdfDataCopy,
-          SettableMetadata(contentType: 'application/pdf'),
-        );
-        if (kDebugMode) {
-          print('PDF uploaded successfully');
-        }
+          // Create a copy of PDF data to avoid memory issues
+          // Cria uma cópia dos dados do PDF para evitar problemas de memória
+          final pdfDataCopy = Uint8List.fromList(pdfData);
+          await pdfRef.putData(
+              pdfDataCopy, SettableMetadata(contentType: 'application/pdf'));
+        }),
 
-        // 2. Upload cover image if available
-        // 2. Faz upload da imagem de capa se disponível
-        Future.microtask(() {
-          ref.read(creationProgressProvider.notifier).state = 0.70;
-        });
-        if (magazineData['cover_image'] != null) {
-          try {
-            // Decode the cover image from base64
-            // Decodifica a imagem de capa do base64
+        // Upload magazine cover image if it exists
+        // Faz upload da imagem de capa da revista se existir
+        if (magazineData['cover_image'] != null)
+          Future(() async {
+            ref.read(creationProgressProvider.notifier).state = 0.70;
+
+            // Decode base64 image data to bytes
+            // Decodifica dados da imagem em base64 para bytes
             final coverImageBytes = base64Decode(magazineData['cover_image']);
             final imageFileName = '${sanitizedTopic}_cover.jpg';
             final imageRef = FirebaseStorage.instance
                 .ref()
                 .child('$basePath/$imageFileName');
-
             await imageRef.putData(
-              coverImageBytes,
-              SettableMetadata(contentType: 'image/jpeg'),
-            );
-            if (kDebugMode) {
-              print('Cover image uploaded successfully');
-            }
-          } catch (imageError) {
-            if (kDebugMode) {
-              print('Error uploading cover image: $imageError');
-            }
-          }
-        }
+                coverImageBytes, SettableMetadata(contentType: 'image/jpeg'));
+          }),
 
-        // 3. Upload first page image if available
-        // 3. Faz upload da imagem da primeira página se disponível
-        Future.microtask(() {
-          ref.read(creationProgressProvider.notifier).state = 0.80;
-        });
-        if (magazineData['first_page_image'] != null) {
-          try {
-            // Decode the first page image from base64
-            // Decodifica a imagem da primeira página do base64
+        // Upload first page image if it exists
+        // Faz upload da imagem da primeira página se existir
+        if (magazineData['first_page_image'] != null)
+          Future(() async {
+            ref.read(creationProgressProvider.notifier).state = 0.80;
+
+            // Decode base64 image data to bytes
+            // Decodifica dados da imagem em base64 para bytes
             final firstPageImageBytes =
                 base64Decode(magazineData['first_page_image']);
             final firstPageFileName = '${sanitizedTopic}_first_page.jpg';
             final firstPageRef = FirebaseStorage.instance
                 .ref()
                 .child('$basePath/$firstPageFileName');
+            await firstPageRef.putData(firstPageImageBytes,
+                SettableMetadata(contentType: 'image/jpeg'));
+          }),
+      ]);
 
-            await firstPageRef.putData(
-              firstPageImageBytes,
-              SettableMetadata(contentType: 'image/jpeg'),
-            );
-            if (kDebugMode) {
-              print('First page image uploaded successfully');
-            }
-          } catch (firstPageError) {
-            if (kDebugMode) {
-              print('Error uploading first page image: $firstPageError');
-            }
-          }
-        }
-
-        // 4. Create a Firestore document to store metadata
-        // 4. Cria um documento no Firestore para armazenar metadados
-        Future.microtask(() {
-          ref.read(creationProgressProvider.notifier).state = 0.90;
-        });
+      // Save metadata in background
+      // Salva os metadados em segundo plano
+      await Future.microtask(() async {
+        ref.read(creationProgressProvider.notifier).state = 0.90;
         final magazineMetadata = {
           'theme': widget.topic,
           'language': language,
           'date': now.toIso8601String(),
           'coins': coins,
           'folderPath': basePath,
-          'pdfFileName': pdfFileName,
+          'pdfFileName': '$sanitizedTopic.pdf',
           'coverImageFileName': '${sanitizedTopic}_cover.jpg',
           'firstPageImageFileName': '${sanitizedTopic}_first_page.jpg',
           'createdAt': FieldValue.serverTimestamp(),
         };
 
-        // Save to Firestore with document ID matching the folder name
-        // Salva no Firestore com ID do documento igual ao nome da pasta
-        await FirebaseFirestore.instance
+        // Run Firestore operations in transaction
+        // Executa operações do Firestore em transação
+        final batch = FirebaseFirestore.instance.batch();
+
+        // Save magazine metadata
+        // Salva os metadados da revista
+        final magazineRef = FirebaseFirestore.instance
             .collection('Users')
             .doc(userID)
             .collection('Magazines')
-            .doc(dateFolder)
-            .set(magazineMetadata);
+            .doc(dateFolder);
+        batch.set(magazineRef, magazineMetadata);
 
-        // Debit coins from user account
-        // Debita as moedas da conta do usuário
+        // Update user coins
+        // Atualiza as moedas do usuário
         final userRef =
             FirebaseFirestore.instance.collection('Users').doc(userID);
-        await FirebaseFirestore.instance.runTransaction((transaction) async {
-          final userDoc = await transaction.get(userRef);
-          if (!userDoc.exists) {
-            throw Exception('User document does not exist');
-          }
-
-          final currentCoins = userDoc.data()?['coins'] ?? 0;
-          if (currentCoins < coins) {
-            throw Exception('Insufficient coins');
-          }
-
-          transaction.update(userRef, {'coins': currentCoins - coins});
-        });
-
-        if (kDebugMode) {
-          print(
-              'Magazine metadata saved to Firestore and $coins coins debited from user account');
+        final userDoc = await userRef.get();
+        if (!userDoc.exists) {
+          throw Exception('User document does not exist');
         }
-      } catch (uploadError) {
-        if (kDebugMode) {
-          print('Error uploading files: $uploadError');
-        }
-        // Continue to PDF viewer even if upload fails
-        // Continua para o visualizador de PDF mesmo se o upload falhar
-      }
 
-      // If creation is successful and not currently disposed, navigate to PDF viewer
-      // Se a criação for bem-sucedida e não estiver atualmente descartado, navega para o visualizador de PDF
+        final currentCoins = userDoc.data()?['coins'] ?? 0;
+        if (currentCoins < coins) {
+          throw Exception('Insufficient coins');
+        }
+
+        batch.update(userRef, {'coins': currentCoins - coins});
+        await batch.commit();
+      });
+
+      // Navigate to PDF viewer
+      // Navega para o visualizador de PDF
       if (mounted) {
         await Navigator.of(context).push(
           MaterialPageRoute(
@@ -276,10 +241,8 @@ class _CreationPageState extends ConsumerState<CreationPage>
           ),
         );
 
-        // Return to NewsstandPage after viewer is closed (replace instead of pop)
-        // Retorna à tela anterior após o visualizador ser fechado
         if (mounted) {
-          Navigator.of(context).pop(); // Pop the CreationPage
+          Navigator.of(context).pop();
         }
       }
     } catch (e) {
@@ -312,14 +275,16 @@ class _CreationPageState extends ConsumerState<CreationPage>
   // Get description text based on progress
   // Obtém texto de descrição baseado no progresso
   String _getDescriptionText(double progress, List<String> texts) {
-    if (progress == 0.0 || progress < 0.05)
+    if (progress == 0.0 || progress < 0.05) {
       return texts[6]; // At 0% show editorial team brainstorming
+    }
     if (progress < 0.15) return texts[7]; // Journalists interviewing experts
     if (progress < 0.25) return texts[8]; // Writers drafting articles
     if (progress < 0.35) return texts[9]; // Editor reviewing content
     if (progress < 0.45) return texts[10]; // Design team creating cover layout
-    if (progress < 0.55)
+    if (progress < 0.55) {
       return texts[11]; // Photographers capturing cover image
+    }
     if (progress < 0.65) return texts[12]; // Layout artists arranging interior
     if (progress < 0.75) return texts[13]; // Finalizing graphics and images
     if (progress < 0.85) return texts[14]; // Printing copies

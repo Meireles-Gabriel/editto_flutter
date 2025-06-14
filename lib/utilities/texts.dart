@@ -4,6 +4,8 @@ List<String> introPT = [
   'Éditto', //0
   'Verdadeiramente Sua Magazine', //1
   'Começar', //2
+  'Crie\nrevistas baseadas\nem qualquer tema', //3
+  'Faça\nsua própria\ncoleção de PDFs', //4
 ];
 
 // Intro page texts in English
@@ -12,6 +14,8 @@ List<String> introEN = [
   'Éditto', //0
   'Truly Yours Magazine', //1
   'Get Started', //2
+  'Create\nmagazines\nbased on any theme', //3
+  'Make\nyour own\nPDF collection', //4
 ];
 
 // Login page texts in Portuguese
@@ -163,13 +167,25 @@ List<String> newsstandEN = [
 // Rack page texts in Portuguese
 // Textos da página de estante em português
 List<String> rackPT = [
-  'Minha Estante', //0
+  'Estante', //0
   'Erro ao carregar suas revistas.', //1
   'Você ainda não tem revistas.', //2
   'Imagem', //3
   'Capa', //4
   'Exibir como', //5
   'Desconhecido', //6
+  'Baixado com sucesso', //7
+  'Erro ao baixar', //8
+  'Baixar Revista', //9
+  'Baixar Imagem', //10
+  'Baixar Capa', //11
+  'Excluir', //12
+  'Excluir Revista', //13
+  'Tem certeza que deseja excluir esta revista? Esta ação não pode ser desfeita.', //14
+  'Cancelar', //15
+  'Confirmar', //16
+  'Revista excluída com sucesso', //17
+  'Erro ao excluir revista', //18
 ];
 
 // Rack page texts in English
@@ -182,13 +198,25 @@ List<String> rackEN = [
   'Cover', //4
   'Display as', //5
   'Unknown', //6
+  'Successfully downloaded', //7
+  'Error downloading', //8
+  'Download Magazine', //9
+  'Download Image', //10
+  'Download Cover', //11
+  'Delete', //12
+  'Delete Magazine', //13
+  'Are you sure you want to delete this magazine? This action cannot be undone.', //14
+  'Cancel', //15
+  'Confirm', //16
+  'Magazine successfully deleted', //17
+  'Error deleting magazine', //18
 ];
 
 // Creation page texts in Portuguese
 // Textos da página de criação em português
 List<String> creationPT = [
   'Criando sua revista', //0
-  'Criação de Revista', //1
+  'Criação da Revista', //1
   'Erro ao criar revista', //2
   'Tentar novamente', //3
   'Progresso da criação', //4

@@ -7,7 +7,7 @@ import 'dart:async';
 // Base URL for API calls
 // URL base para chamadas de API
 const bool useLocalServer = false; // Set to false for production
-const String localApiBaseUrl = 'http://192.168.15.183:8080';
+const String localApiBaseUrl = 'http://192.168.1.6:8080';
 const String productionApiBaseUrl =
     'https://editto-backend-572616648599.us-central1.run.app';
 const String apiBaseUrl =
