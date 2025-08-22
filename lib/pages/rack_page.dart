@@ -186,7 +186,6 @@ class _RackPageState extends ConsumerState<RackPage> {
         await FileSaver.instance.saveFile(
           name: fileName,
           bytes: bytes,
-          ext: type.toLowerCase() == 'pdf' ? 'pdf' : 'jpg',
           mimeType: type.toLowerCase() == 'pdf' ? MimeType.pdf : MimeType.jpeg,
         );
       } else {
